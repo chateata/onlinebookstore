@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.bookshop.dao.BookDisplayMapper">
+  <!-- Use the existing Book resultMap to ensure column->property mapping is consistent -->
+  <select id="fuzzyQueryByBookName" parameterType="java.lang.String" resultMap="com.shop.bookshop.dao.BookMapper.BaseResultMap">
+    select
+    <include refid="com.shop.bookshop.dao.BookMapper.Base_Column_List" />
+    from book
+    where book_name like CONCAT('%', #{bookName}, '%')
+       or author like CONCAT('%', #{bookName}, '%')
+       or press like CONCAT('%', #{bookName}, '%')
+  </select>
+</mapper>
+
+

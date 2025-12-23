@@ -6,6 +6,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.Date;
+import java.math.BigDecimal;
 
 public class User {
     private Integer userId;
@@ -24,6 +25,9 @@ public class User {
     private String avatar;
 
     private Date joinTime;
+    private BigDecimal accountBalance;
+    private Integer creditLevelId;
+    private CreditLevel creditLevel;
 
     public Integer getUserId() {
         return userId;
@@ -71,5 +75,29 @@ public class User {
 
     public void setJoinTime(Date joinTime) {
         this.joinTime = joinTime;
+    }
+
+    public BigDecimal getAccountBalance() {
+        return accountBalance;
+    }
+
+    public void setAccountBalance(BigDecimal accountBalance) {
+        this.accountBalance = accountBalance;
+    }
+
+    public Integer getCreditLevelId() {
+        return creditLevelId;
+    }
+
+    public void setCreditLevelId(Integer creditLevelId) {
+        this.creditLevelId = creditLevelId;
+    }
+
+    public CreditLevel getCreditLevel() {
+        return creditLevel;
+    }
+
+    public void setCreditLevel(CreditLevel creditLevel) {
+        this.creditLevel = creditLevel;
     }
 }

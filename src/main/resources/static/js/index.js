@@ -63,9 +63,22 @@ layui.use(['element', 'jquery', 'layer', 'laytpl','laypage'], function() {
 				$("#content").html('<div style="text-align: center;font-size: 20px;">暂时没有数据</div>');
 				return ;
 			}
-			laytpl($("#book-card-tpl").html()).render(result.data,function(html){
-				$("#content").html(html);
-			});
+			// Get raw template text (prefer .text() to avoid HTML-escaping by Thymeleaf)
+			var tplHtml = $("#book-card-tpl").text() || $("#book-card-tpl").html();
+			try {
+				tplHtml = $("<textarea/>").html(tplHtml).text();
+			} catch (e) {}
+			console.debug("index template before render:", tplHtml.slice(0,200));
+			console.debug("index data sample:", (result.data && result.data.length>0) ? result.data[0] : result.data);
+			try {
+				laytpl(tplHtml).render(result.data,function(html){
+					console.debug("index rendered html preview:", html.slice(0,200));
+					$("#content").html('<div class="book-container"><div class="book-grid">' + html + '</div></div>');
+				});
+			} catch (e) {
+				console.error("laytpl render error:", e);
+				$("#content").text(tplHtml);
+			}
 			//调用分页
 			laypage.render({
 				elem: 'page-util'

@@ -57,7 +57,32 @@ layui.use(['element', 'jquery', 'layer', 'laytpl','laypage','form','table'], fun
 	      });
 	    } else if(obj.event === 'detail'){
 	      //渲染订单明细
-			laytpl($("#order-item-tpl").html()).render(data.orderItems,function(html){
+            var tplHtml = $("#order-item-tpl").text() || $("#order-item-tpl").html();
+            try {
+                tplHtml = $("<textarea/>").html(tplHtml).text();
+            } catch (e) {}
+            // compute authorsDisplay for each order item if missing
+            try {
+                if (data.orderItems && data.orderItems.length > 0) {
+                    data.orderItems.forEach(function (item) {
+                        if (item && item.book_info) {
+                            var bi = item.book_info;
+                            if (!bi.authorsDisplay) {
+                                if (bi.authors && bi.authors.length > 0) {
+                                    var names = [];
+                                    layui.each(bi.authors, function (i, a) {
+                                        names.push((a && a.name) || a || '');
+                                    });
+                                    bi.authorsDisplay = names.join(', ');
+                                } else {
+                                    bi.authorsDisplay = bi.author || '';
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (e) { console.debug("compute authorsDisplay failed", e); }
+			laytpl(tplHtml).render(data.orderItems,function(html){
 				$("#order-items").html(html);
 			});
 	    }

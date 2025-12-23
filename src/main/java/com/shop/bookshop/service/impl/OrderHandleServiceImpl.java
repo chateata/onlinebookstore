@@ -6,9 +6,13 @@ import com.shop.bookshop.dao.BookMapper;
 import com.shop.bookshop.dao.OrderItemMapper;
 import com.shop.bookshop.dao.OrderMapper;
 import com.shop.bookshop.dao.ShoppingCartMapper;
+import com.shop.bookshop.dao.UserMapper;
+import com.shop.bookshop.dao.CreditLevelMapper;
 import com.shop.bookshop.pojo.Book;
 import com.shop.bookshop.pojo.Order;
 import com.shop.bookshop.pojo.OrderItem;
+import com.shop.bookshop.pojo.User;
+import com.shop.bookshop.pojo.CreditLevel;
 import com.shop.bookshop.service.OrderHandleService;
 import com.shop.bookshop.util.ResultCode;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -29,6 +36,10 @@ public class OrderHandleServiceImpl implements OrderHandleService {
     private ShoppingCartMapper shoppingCartMapper;
     @Resource
     private BookMapper bookMapper;
+    @Resource
+    private UserMapper userMapper;
+    @Resource
+    private CreditLevelMapper creditLevelMapper;
 
     /**
      * 创建用户订单
@@ -37,23 +48,80 @@ public class OrderHandleServiceImpl implements OrderHandleService {
     @Override
     public void createOrder(Order order) {
 
-        //添加父订单
-        orderMapper.insert(order);
-        //添加订单子项
-        for (OrderItem orderItem :order.getOrderItems()) {
-            orderItem.setOrderId(order.getOrderId());
-            orderItemMapper.insert(orderItem);
-            //如果存在购物车，则删除购物车
-            shoppingCartMapper.deleteByUserIdAndBookId(order.getUserId(), orderItem.getBookId());
-            //判断书籍库存
-            Book book = bookMapper.selectByBookId(orderItem.getBookId());
-            if(book.getStock()<orderItem.getQuantity()){
-                //库存不足
-                throw new CustomizeException(ResultCode.FAILED,"书籍《"+book.getBookName()+"》的库存不足");
+        // 验证订单项并计算折后单价与总价（按客户信用等级折扣）
+        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+            throw new CustomizeException(ResultCode.FAILED, "订单项不能为空");
+        }
+        // 读取用户与信用等级
+        User user = null;
+        CreditLevel creditLevel = null;
+        if (order.getUserId() != null) {
+            user = userMapper.selectByUserId(order.getUserId());
+            if (user != null && user.getCreditLevelId() != null) {
+                creditLevel = creditLevelMapper.selectByLevelId(user.getCreditLevelId());
             }
-            //修改书籍库存
-            book.setStock(book.getStock()-orderItem.getQuantity());
-            bookMapper.updateByBookId(book);
+        }
+        BigDecimal discountRate = BigDecimal.ZERO;
+        BigDecimal overdraftLimit = BigDecimal.ZERO;
+        if (creditLevel != null) {
+            discountRate = creditLevel.getDiscountRate() != null ? creditLevel.getDiscountRate() : BigDecimal.ZERO;
+            overdraftLimit = creditLevel.getOverdraftLimit() != null ? creditLevel.getOverdraftLimit() : BigDecimal.ZERO;
+        }
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Book book = bookMapper.selectByBookId(orderItem.getBookId());
+            if (book == null) {
+                throw new CustomizeException(ResultCode.FAILED, "书籍不存在，ID=" + orderItem.getBookId());
+            }
+            // 库存校验：下单时必须确保库存足够
+            Integer stock = book.getStock() == null ? 0 : book.getStock();
+            if (orderItem.getQuantity() == null || orderItem.getQuantity() <= 0) {
+                throw new CustomizeException(ResultCode.FAILED, "订单项数量错误，bookId=" + orderItem.getBookId());
+            }
+            if (stock < orderItem.getQuantity()) {
+                throw new CustomizeException(ResultCode.INSUFFICIENT_STOCK, "库存不足，bookId=" + orderItem.getBookId());
+            }
+            // 按折扣计算单价与小计（四舍五入到2位）
+            BigDecimal unitPrice = book.getPrice().multiply(BigDecimal.ONE.subtract(discountRate)).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal subtotal = unitPrice.multiply(new BigDecimal(orderItem.getQuantity())).setScale(2, BigDecimal.ROUND_HALF_UP);
+            orderItem.setUnitPrice(unitPrice);
+            orderItem.setSubtotal(subtotal);
+            totalAmount = totalAmount.add(subtotal);
+        }
+        order.setTotalAmount(totalAmount);
+
+        // 余额/透支检查：始终校验下单是否在允许透支范围内
+        BigDecimal userBalance = (user != null && user.getAccountBalance() != null) ? user.getAccountBalance() : BigDecimal.ZERO;
+        BigDecimal allowedNegative = overdraftLimit.negate();
+        BigDecimal after = userBalance.subtract(totalAmount);
+        if (after.compareTo(allowedNegative) < 0) {
+            throw new CustomizeException(ResultCode.INSUFFICIENT_CREDIT, "余额或信用不足，无法下单");
+        }
+        // 设置默认支付与发货状态
+        if (order.getPaymentStatus() == null) {
+            order.setPaymentStatus("PENDING");
+        }
+        if (order.getShippingStatus() == null) {
+            order.setShippingStatus("PENDING");
+        }
+        // 插入父订单（回写 orderId）
+        orderMapper.insert(order);
+        // 插入订单子项并删除购物车记录（库存/缺书由数据库触发器处理）
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItem.setOrderId(order.getOrderId());
+            // 确保 shippedQuantity 非 null（数据库列为 NOT NULL）
+            if (orderItem.getShippedQuantity() == null) {
+                orderItem.setShippedQuantity(0);
+            }
+            orderItemMapper.insert(orderItem);
+            if (order.getUserId() != null) {
+                shoppingCartMapper.deleteByUserIdAndBookId(order.getUserId(), orderItem.getBookId());
+            }
+        }
+        // 如果订单为已支付状态（例如前端即时支付），则立即扣减用户余额并持久化
+        if ("PAID".equalsIgnoreCase(order.getPaymentStatus()) && user != null) {
+            user.setAccountBalance(userBalance.subtract(totalAmount));
+            userMapper.updateByUserId(user);
         }
     }
 
@@ -88,5 +156,93 @@ public class OrderHandleServiceImpl implements OrderHandleService {
         PageHelper.startPage(page, limit);
         List<Order> orders = orderMapper.selectAll();
         return orders;
+    }
+
+    /**
+     * 发货实现：按传入的订单项进行发货（分批），扣减用户余额并更新订单/订单项状态
+     */
+    @Override
+    public void shipOrder(Integer orderId, List<OrderItem> shipItems) {
+        if (orderId == null || shipItems == null || shipItems.isEmpty()) {
+            throw new CustomizeException(ResultCode.FAILED, "参数错误：订单ID或发货项为空");
+        }
+        Order order = orderMapper.selectByOrderId(orderId);
+        if (order == null) {
+            throw new CustomizeException(ResultCode.FAILED, "订单不存在，ID=" + orderId);
+        }
+        User user = null;
+        CreditLevel creditLevel = null;
+        if (order.getUserId() != null) {
+            user = userMapper.selectByUserId(order.getUserId());
+            if (user != null && user.getCreditLevelId() != null) {
+                creditLevel = creditLevelMapper.selectByLevelId(user.getCreditLevelId());
+            }
+        }
+        BigDecimal overdraftLimit = BigDecimal.ZERO;
+        if (creditLevel != null && creditLevel.getOverdraftLimit() != null) {
+            overdraftLimit = creditLevel.getOverdraftLimit();
+        }
+        // map existing order items by bookId
+        Map<Integer, OrderItem> existingMap = new HashMap<>();
+        if (order.getOrderItems() != null) {
+            for (OrderItem oi : order.getOrderItems()) {
+                existingMap.put(oi.getBookId(), oi);
+            }
+        }
+        // 计算本次发货总额
+        BigDecimal shipTotal = BigDecimal.ZERO;
+        for (OrderItem shipItem : shipItems) {
+            OrderItem exist = existingMap.get(shipItem.getBookId());
+            if (exist == null) {
+                throw new CustomizeException(ResultCode.FAILED, "订单项不存在，bookId=" + shipItem.getBookId());
+            }
+            int remain = (exist.getQuantity() == null ? 0 : exist.getQuantity()) - (exist.getShippedQuantity() == null ? 0 : exist.getShippedQuantity());
+            int toShip = shipItem.getQuantity() == null ? 0 : shipItem.getQuantity();
+            if (toShip <= 0) continue;
+            if (toShip > remain) {
+                throw new CustomizeException(ResultCode.FAILED, "发货数量超过未发数量，bookId=" + shipItem.getBookId());
+            }
+            BigDecimal unit = exist.getUnitPrice() == null ? exist.getPrice() : exist.getUnitPrice();
+            BigDecimal part = unit.multiply(new BigDecimal(toShip)).setScale(2, BigDecimal.ROUND_HALF_UP);
+            shipTotal = shipTotal.add(part);
+        }
+        // 支付校验：若订单未付款则需检查余额/透支
+        String paymentStatus = order.getPaymentStatus() == null ? "PENDING" : order.getPaymentStatus();
+        if (!"PAID".equalsIgnoreCase(paymentStatus)) {
+            BigDecimal userBalance = user != null && user.getAccountBalance() != null ? user.getAccountBalance() : BigDecimal.ZERO;
+            BigDecimal allowedNegative = overdraftLimit.negate();
+            BigDecimal after = userBalance.subtract(shipTotal);
+            if (after.compareTo(allowedNegative) < 0) {
+                throw new CustomizeException(ResultCode.FAILED, "余额或信用不足，无法发货");
+            }
+            // 扣减余额并持久化
+            if (user != null) {
+                user.setAccountBalance(userBalance.subtract(shipTotal));
+                userMapper.updateByUserId(user);
+            }
+        }
+        // 执行发货：更新 order_item.shipped_quantity
+        for (OrderItem shipItem : shipItems) {
+            OrderItem exist = existingMap.get(shipItem.getBookId());
+            int toShip = shipItem.getQuantity() == null ? 0 : shipItem.getQuantity();
+            int newShipped = (exist.getShippedQuantity() == null ? 0 : exist.getShippedQuantity()) + toShip;
+            exist.setShippedQuantity(newShipped);
+            orderItemMapper.updateByOrderIdAndBookId(exist);
+        }
+        // 重新计算订单发货状态
+        int totalOrdered = 0;
+        int totalShipped = 0;
+        for (OrderItem oi : order.getOrderItems()) {
+            totalOrdered += oi.getQuantity() == null ? 0 : oi.getQuantity();
+            totalShipped += oi.getShippedQuantity() == null ? 0 : oi.getShippedQuantity();
+        }
+        if (totalShipped >= totalOrdered) {
+            order.setShippingStatus("SHIPPED");
+        } else if (totalShipped > 0) {
+            order.setShippingStatus("PARTIAL");
+        } else {
+            order.setShippingStatus("PENDING");
+        }
+        orderMapper.updateByOrderId(order);
     }
 }

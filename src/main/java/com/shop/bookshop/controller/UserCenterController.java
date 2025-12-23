@@ -7,6 +7,7 @@ import com.shop.bookshop.service.OrderHandleService;
 import com.shop.bookshop.util.ResultCode;
 import com.shop.bookshop.util.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,10 @@ public class UserCenterController {
 
     @Autowired
     private OrderHandleService orderHandleService;
+    @Resource
+    private com.shop.bookshop.dao.UserMapper userMapper;
+    @Resource
+    private com.shop.bookshop.dao.CreditLevelMapper creditLevelMapper;
 
 
 
@@ -45,6 +50,14 @@ public class UserCenterController {
     public ResultVO deleteOrder(@PathVariable("orderId") Integer orderId) {
         int orders = orderHandleService.deleteOrderById(orderId);
         return new ResultVO(ResultCode.SUCCESS,null);
+    }
+
+    /**
+     * 用户中心页面
+     */
+    @GetMapping("")
+    public String userCenter() {
+        return "user_center";
     }
 
 }

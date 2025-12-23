@@ -28,6 +28,24 @@ public class ResultVO<T> {
         this(resultCode.getCode(),msg,data);
     }
 
+    public static <T> ResultVO<T> success(T data){
+        return new ResultVO<>(ResultCode.SUCCESS, data);
+    }
+
+    public static <T> ResultVO<T> success(String msg, T data){
+        ResultVO<T> vo = new ResultVO<>(ResultCode.SUCCESS, data);
+        vo.setMsg(msg);
+        return vo;
+    }
+
+    public static <T> ResultVO<T> error(ResultCode code){
+        return new ResultVO<>(code);
+    }
+
+    public static <T> ResultVO<T> error(ResultCode code, String msg){
+        return new ResultVO<>(code, msg, null);
+    }
+
     public int getCode() {
         return code;
     }

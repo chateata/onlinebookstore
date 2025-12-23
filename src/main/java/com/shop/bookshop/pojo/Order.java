@@ -31,6 +31,9 @@ public class Order {
     private User user_info;
     private List<OrderItem> orderItems;
     private List<ShoppingCart> carts;
+    private java.math.BigDecimal totalAmount;
+    private String paymentStatus;
+    private String shippingStatus;
 
     public List<ShoppingCart> getCarts() {
         return carts;
@@ -118,6 +121,30 @@ public class Order {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public java.math.BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(java.math.BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getShippingStatus() {
+        return shippingStatus;
+    }
+
+    public void setShippingStatus(String shippingStatus) {
+        this.shippingStatus = shippingStatus;
     }
 
     @Override

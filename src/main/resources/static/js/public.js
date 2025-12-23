@@ -85,3 +85,17 @@ layui.use(['element', 'jquery', 'layer', 'laytpl', 'laypage', 'form'], function 
     }
 
 });
+
+// 页面通用：同步头部余额与等级（若登录）
+layui.use(['jquery'], function () {
+    var $ = layui.jquery;
+    $.getJSON("/user/credit", function (res) {
+        console.debug("public.js /user/credit response:", res);
+        if (res && res.code == 0 && res.data) {
+            var data = res.data;
+            $("#header-balance").text("余额：" + (data.accountBalance == null ? '--' : data.accountBalance));
+            var cl = data.creditLevel;
+            $("#header-credit").text("等级：" + (cl ? cl.levelName : '--'));
+        }
+    });
+});

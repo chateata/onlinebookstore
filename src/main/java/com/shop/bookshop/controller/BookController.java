@@ -74,7 +74,7 @@ public class BookController {
     }
 
     /**
-     * 多条件搜索   ----by guozongchao
+     * 多条件搜索  
      * @param book
      * @param page
      * @param limit

@@ -46,6 +46,13 @@ public class LoginRegisterServiceImpl implements LoginRegisterService {
         if(user!=null){
             throw new CustomizeException(ResultCode.FAILED,"用户名已存在");
         }
+        // 设置默认信用等级为3和默认余额100（若未指定）
+        if (record.getCreditLevelId() == null) {
+            record.setCreditLevelId(3);
+        }
+        if (record.getAccountBalance() == null) {
+            record.setAccountBalance(new java.math.BigDecimal("100.00"));
+        }
         userMapper.insert(record);
     }
 

@@ -8,6 +8,10 @@
     <result column="isbn" jdbcType="VARCHAR" property="isbn" />
     <result column="author" jdbcType="VARCHAR" property="author" />
     <result column="press" jdbcType="VARCHAR" property="press" />
+    <result column="publisher_id" jdbcType="INTEGER" property="publisherId" />
+    <result column="series_id" jdbcType="INTEGER" property="seriesId" />
+    <result column="min_stock" jdbcType="INTEGER" property="minStock" />
+    <result column="cover_path" jdbcType="VARCHAR" property="coverPath" />
     <result column="pub_date" jdbcType="DATE" property="pubDate" />
     <result column="image" jdbcType="VARCHAR" property="image" />
     <result column="description" jdbcType="VARCHAR" property="description" />
@@ -16,9 +20,13 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <association property="category" column="category_code" javaType="com.shop.bookshop.pojo.Category"
     select="com.shop.bookshop.dao.CategoryMapper.selectByByCategoryCode" />
+    <association property="publisher" column="publisher_id" javaType="com.shop.bookshop.pojo.Publisher"
+    select="com.shop.bookshop.dao.PublisherMapper.selectByPublisherId" />
+    <association property="series" column="series_id" javaType="com.shop.bookshop.pojo.Series"
+    select="com.shop.bookshop.dao.SeriesMapper.selectBySeriesId" />
   </resultMap>
   <sql id="Base_Column_List">
-    book_id, category_code, book_name, isbn, author, press, pub_date, image, description,
+    book_id, category_code, book_name, isbn, author, press, publisher_id, series_id, min_stock, cover_path, pub_date, image, description,
     price, stock, create_time
   </sql>
   <select id="selectByBookId" parameterType="java.lang.Integer" resultMap="BaseResultMap">

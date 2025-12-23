@@ -9,10 +9,12 @@
 </head>
 <body>
 <div th:replace="_fragment::header(null)"></div>
-<div class="login-box" style="margin: 150px 0px;">
-    <h1>用户登录</h1>
-    <div class="login-form">
-        <div class="layui-form">
+<div class="login-page">
+    <div class="login-box">
+        <h1>用户登录</h1>
+        <div class="login-form">
+            <form class="layui-form">
+            <div class="layui-form">
             <div class="layui-form-item">
                 <label class="layui-form-label"><i class="layui-icon layui-icon-username" style="font-size: 25px;"></i></label>
                 <div class="layui-input-block">
@@ -31,11 +33,14 @@
             </div>
             <div class="layui-form-item">
                 <div class="layui-input-block">
-                    <button class="layui-btn" lay-submit lay-filter="login-btn" style="width: 100%;">立即登录</button>
-                    <p style="margin-top: 10px;float: left;"><a th:href="@{/register}">前往注册</a></p>
-                    <p style="margin-top: 10px;float: right;"><a th:href="@{/admin/login}">后台登录</a></p>
+                        <button class="primary-btn" lay-submit lay-filter="login-btn">立即登录</button>
+                        <div class="links">
+                            <a th:href="@{/register}" class="secondary-btn small">前往注册</a>
+                            <a th:href="@{/admin/login}" class="secondary-btn small">后台登录</a>
+                        </div>
                 </div>
             </div>
+            </form>
         </div>
     </div>
 </div>

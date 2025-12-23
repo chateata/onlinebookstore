@@ -35,4 +35,11 @@ public interface OrderHandleService {
      */
     List<Order> getAllOrdersByPage(Integer page, Integer limit);
 
+    /**
+     * 发货：按订单项进行分批发货并处理余额扣减与状态更新
+     * @param orderId
+     * @param shipItems 传入要发货的订单项（bookId/quantity）
+     */
+    void shipOrder(Integer orderId, List<com.shop.bookshop.pojo.OrderItem> shipItems);
+
 }

@@ -27,9 +27,45 @@ layui.use(['element', 'jquery', 'layer', 'laytpl', 'laypage', 'form'], function 
                 $("#deleteSelectedBtn").hide();
                 return;
             }
-            laytpl($("#shopping-carts-tpl").html()).render(res.data, function (html) {
-                $("#shopping-carts").html(html);
-            });
+            // Prefer .text() to get raw script content (unescaped); fallback to .html() if needed.
+            var tplHtml = $("#shopping-carts-tpl").text() || $("#shopping-carts-tpl").html();
+            try {
+                // If any entities remain, decode them.
+                tplHtml = $("<textarea/>").html(tplHtml).text();
+            } catch (e) { /* fallback: keep original */ }
+            // compute a simple authorsDisplay on client in case backend hasn't populated it yet
+            try {
+                if (res.data && res.data.length > 0) {
+                    res.data.forEach(function (item) {
+                        if (item && item.book_info) {
+                            var bi = item.book_info;
+                            if (bi.authors && bi.authors.length > 0) {
+                                var names = [];
+                                layui.each(bi.authors, function (i, a) {
+                                    names.push((a && a.name) || a || '');
+                                });
+                                bi.authorsDisplay = names.join(', ');
+                            } else {
+                                bi.authorsDisplay = bi.author || '';
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.debug("compute authorsDisplay failed", e);
+            }
+            console.debug("cart template before render:", tplHtml.slice(0,200));
+            console.debug("cart data sample:", (res.data && res.data.length>0) ? res.data[0] : res.data);
+            try {
+                laytpl(tplHtml).render(res.data, function (html) {
+                    console.debug("cart rendered html preview:", html.slice(0,200));
+                    $("#shopping-carts").html(html);
+                });
+            } catch (e) {
+                console.error("laytpl render error:", e);
+                // fallback: render raw template to help debugging
+                $("#shopping-carts").text(tplHtml);
+            }
             form.render('checkbox');
         });
     }

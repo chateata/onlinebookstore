@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
 
 	/**
-	 * 多条件查询用户  -----by guozongchao
+	 * 多条件查询用户
 	 *
 	 * @param user
 	 * @param page

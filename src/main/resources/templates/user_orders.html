@@ -10,7 +10,7 @@
 </head>
 <body>
 <div th:replace="_fragment::header(null)"></div>
-<div class="layui-container">
+<div class="page-wrapper">
     <div class="breadcrumb">
         <span class="layui-breadcrumb">
             <a th:href="@{/index}">首页</a>
@@ -18,7 +18,7 @@
         </span>
     </div>
 </div>
-<div class="layui-container">
+    <div class="page-wrapper">
     <div class="order-page">
         <h2>我的订单</h2>
         <hr/>
@@ -37,7 +37,7 @@
 
 <link rel="stylesheet" type="text/css" th:href="@{/css/user_orders.css}"/>
 <script th:src="@{/js/user_orders.js}" type="text/javascript" charset="utf-8"></script>
-<script type="text/html" id="order-item-tpl">
+<script type="text/html" id="order-item-tpl" th:inline="none">
     {{# layui.each(d,function(index,item){   }}
     <div class="order-item-box">
         <div class="order-item">
@@ -46,7 +46,9 @@
             <div class="order-item-info">
                 <p><a href="/index/books/details/{{item.bookId}}">{{item.book_info.bookName}}</a></p>
                 <p>
-                    {{item.book_info.author}}&nbsp;/&nbsp;{{item.book_info.pubDate}}&nbsp;/&nbsp;{{item.book_info.press}}</p>
+                    {{ item.book_info.authorsDisplay || item.book_info.author }}
+                    &nbsp;/&nbsp;{{item.book_info.pubDate}}&nbsp;/&nbsp;{{ item.book_info.publisher ? item.book_info.publisher.name : item.book_info.press }}
+                </p>
                 <p>¥&nbsp;{{item.price}}&nbsp;&nbsp;<del><em>¥&nbsp;{{item.book_info.price}}</em></del>
                 </p>
             </div>

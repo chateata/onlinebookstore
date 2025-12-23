@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.bookshop.dao.ShortageMapper">
+  <resultMap id="BaseResultMap" type="com.shop.bookshop.pojo.Shortage">
+    <id column="shortage_id" property="shortageId" />
+    <result column="book_id" property="bookId" />
+    <result column="quantity" property="quantity" />
+    <result column="register_date" property="registerDate" />
+    <result column="source" property="source" />
+    <result column="is_processed" property="isProcessed" />
+    <result column="customer_request_id" property="customerRequestId" />
+  </resultMap>
+  <sql id="Base_Column_List">shortage_id, book_id, quantity, register_date, source, is_processed, customer_request_id</sql>
+  <select id="selectByShortageId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from shortage where shortage_id = #{shortageId}
+  </select>
+  <select id="selectUnprocessed" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from shortage where is_processed = b'0'
+  </select>
+  <insert id="insert" parameterType="com.shop.bookshop.pojo.Shortage" useGeneratedKeys="true" keyProperty="shortageId">
+    insert into shortage (book_id, quantity, register_date, source, is_processed, customer_request_id)
+    values (#{bookId}, #{quantity}, #{registerDate}, #{source}, #{isProcessed}, #{customerRequestId})
+  </insert>
+  <update id="updateByShortageId" parameterType="com.shop.bookshop.pojo.Shortage">
+    update shortage
+    <set>
+      <if test="quantity != null">quantity = #{quantity},</if>
+      <if test="isProcessed != null">is_processed = #{isProcessed},</if>
+    </set>
+    where shortage_id = #{shortageId}
+  </update>
+</mapper>
+
+

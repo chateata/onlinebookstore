@@ -70,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
 
 
 	/**
-	 * 多条件搜索订单  ---by guozongchao
+	 * 多条件搜索订单 
 	 *
 	 * @param order
 	 * @param page

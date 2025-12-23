@@ -10,7 +10,7 @@
 </head>
 <body>
 <div th:replace="_fragment::header(null)"></div>
-<div class="layui-container">
+<div class="page-wrapper">
     <div class="breadcrumb">
         <span class="layui-breadcrumb">
             <a th:href="@{/index}">首页</a>
@@ -32,11 +32,19 @@
             </p>
             <p class="author">
                 <b>作者：</b>
-                <span class="layui-badge-rim">[[${book.author}]]</span>
+                <span class="layui-badge-rim" th:text="${book.authors != null && #lists.isNotEmpty(book.authors) ? #strings.join(#lists.map(book.authors,'name'),', ') : (book.author)}"></span>
             </p>
             <p class="press">
                 <b>出版社：</b>
-                <span class="layui-badge-rim">[[${book.press}]]</span>
+                <span class="layui-badge-rim" th:text="${book.publisher != null ? book.publisher.name : book.press}"></span>
+            </p>
+            <p class="series" th:if="${book.series != null}">
+                <b>丛书：</b>
+                <span class="layui-badge-rim" th:text="${book.series.seriesName}"></span>
+            </p>
+            <p class="minstock">
+                <b>最低库存：</b>
+                <span class="layui-badge-rim" th:text="${book.minStock}">0</span>
             </p>
             <p class="pub_time">
                 <b>出版日期：</b>

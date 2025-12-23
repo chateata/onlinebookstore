@@ -58,7 +58,7 @@ public class BookServiceImpl implements BookService {
 
 
 	/**
-	 * 多条件查询书籍   ----by guozongchao
+	 * 多条件查询书籍 
 	 * @param book
 	 * @return
 	 */

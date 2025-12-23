@@ -47,6 +47,9 @@ public class OrderController {
     public ResultVO orderSubmit(@RequestBody @Valid Order order, HttpSession session) {
         User user = (User) session.getAttribute("user");
         order.setUserId(user.getUserId());
+        if (order.getPaymentStatus() == null) {
+            order.setPaymentStatus("PAID");
+        }
         orderHandleService.createOrder(order);
         return new ResultVO(ResultCode.SUCCESS,"/"+user.getUserName()+"/orders");
     }
@@ -103,7 +106,7 @@ public class OrderController {
     }
 
     /**
-     * 多条件搜索订单 ---- by guozongchao
+     * 多条件搜索订单 
      * @param order
      * @param page
      * @param limit

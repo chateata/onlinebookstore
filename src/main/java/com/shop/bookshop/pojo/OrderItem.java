@@ -13,6 +13,9 @@ public class OrderItem {
 
     private Integer quantity;
     private Book book_info;
+    private BigDecimal unitPrice;
+    private BigDecimal subtotal;
+    private Integer shippedQuantity;
 
     public Book getBook_info() {
         return book_info;
@@ -60,6 +63,30 @@ public class OrderItem {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public Integer getShippedQuantity() {
+        return shippedQuantity;
+    }
+
+    public void setShippedQuantity(Integer shippedQuantity) {
+        this.shippedQuantity = shippedQuantity;
     }
 
     @Override

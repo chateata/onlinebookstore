@@ -32,7 +32,7 @@ public interface UserService {
 
 
 	/**
-	 * 多条件查询用户  -----by guozongchao
+	 * 多条件查询用户
 	 * @param user
 	 * @param page
 	 * @param limit

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 public class Book {
     private Integer bookId;
@@ -42,6 +43,16 @@ public class Book {
     @NotNull(message = "库存不能为空")
     private Integer stock;
 
+    private Integer publisherId;
+    private Integer seriesId;
+    private Integer minStock;
+    private String coverPath;
+    private Publisher publisher;
+    private List<Author> authors;
+    private List<Keyword> keywords;
+    private Series series;
+    private String authorsDisplay;
+
     private Date createTime;
     private Category category;
 
@@ -59,6 +70,78 @@ public class Book {
 
     public void setBookId(Integer bookId) {
         this.bookId = bookId;
+    }
+    
+    public Integer getPublisherId() {
+        return publisherId;
+    }
+
+    public void setPublisherId(Integer publisherId) {
+        this.publisherId = publisherId;
+    }
+
+    public Integer getSeriesId() {
+        return seriesId;
+    }
+
+    public void setSeriesId(Integer seriesId) {
+        this.seriesId = seriesId;
+    }
+
+    public Integer getMinStock() {
+        return minStock;
+    }
+
+    public void setMinStock(Integer minStock) {
+        this.minStock = minStock;
+    }
+
+    public String getCoverPath() {
+        return coverPath;
+    }
+
+    public void setCoverPath(String coverPath) {
+        this.coverPath = coverPath;
+    }
+
+    public Publisher getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(Publisher publisher) {
+        this.publisher = publisher;
+    }
+
+    public List<Author> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(List<Author> authors) {
+        this.authors = authors;
+    }
+
+    public List<Keyword> getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(List<Keyword> keywords) {
+        this.keywords = keywords;
+    }
+
+    public Series getSeries() {
+        return series;
+    }
+
+    public void setSeries(Series series) {
+        this.series = series;
+    }
+
+    public String getAuthorsDisplay() {
+        return authorsDisplay;
+    }
+
+    public void setAuthorsDisplay(String authorsDisplay) {
+        this.authorsDisplay = authorsDisplay;
     }
 
     public String getCategoryCode() {

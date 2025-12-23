@@ -10,7 +10,7 @@
 </head>
 <body>
 <div th:replace="_fragment::header('cart')"></div>
-<div class="layui-container">
+<div class="page-wrapper">
     <div class="breadcrumb">
         <span class="layui-breadcrumb">
             <a th:href="@{/index}">首页</a>
@@ -20,9 +20,8 @@
 </div>
 <div class="cart-container">
     <div class="layui-form">
-        <div class="cart">
+        <div class="cart-header" style="padding:12px 0;">
             <input type="checkbox" name="selectAll" title="全选" lay-skin="primary" lay-filter="selectAll">
-            <hr/>
         </div>
         <div id="shopping-carts"></div>
     </div>
@@ -35,7 +34,7 @@
 </body>
 <link rel="stylesheet" type="text/css" th:href="@{/css/cart.css}"/>
 <script th:src="@{/js/cart.js}" type="text/javascript" charset="utf-8"></script>
-<script type="text/html" id="shopping-carts-tpl">
+<script type="text/html" id="shopping-carts-tpl" th:inline="none">
     {{# layui.each(d,function(index,item){    }}
     <div class="cart">
         <input type="checkbox" name="cartId" value="{{item.cartId}}" c-bookId="{{item.bookId}}"
@@ -44,7 +43,10 @@
                                                             alt="{{item.book_info.bookName}}"/></a>
         <div class="cart-info">
             <p><a href="/index/books/details/{{item.bookId}}">{{item.book_info.bookName}}</a></p>
-            <p>{{item.book_info.author}}&nbsp;/&nbsp;{{item.book_info.pubDate}}&nbsp;/&nbsp;{{item.book_info.press}}</p>
+            <p>
+                {{ item.book_info.authorsDisplay || item.book_info.author }}
+                &nbsp;/&nbsp;{{item.book_info.pubDate}}&nbsp;/&nbsp;{{ item.book_info.publisher ? item.book_info.publisher.name : item.book_info.press }}
+            </p>
             <p>¥&nbsp;{{item.book_info.price}}</p>
             <p>购买数量：<input type="number" min="1" max="10" value="{{item.quantity}}" id="quantity-{{item.cartId}}"
                            onchange="checkAndCalculate(this,'{{item.cartId}}','{{item.book_info.price}}')"/>
@@ -53,7 +55,7 @@
         </div>
         <div class="cart-delete">
             <p>¥<span id="total-{{item.cartId}}">{{ calculate(item.book_info.price,item.quantity) }}</span></p>
-            <button type="button" class="layui-btn layui-btn-xs" onclick="deleteByCartId('{{item.cartId}}')">删除</button>
+            <button type="button" class="secondary-btn" onclick="deleteByCartId('{{item.cartId}}')">删除</button>
         </div>
     </div>
     {{#     });       }}

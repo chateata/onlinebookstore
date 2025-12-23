@@ -28,6 +28,30 @@ public class ShoppingCartController {
     public ResultVO getCartByUserId(HttpSession session) {
         User user = (User) session.getAttribute("user");
         List<ShoppingCart> carts = shoppingCartService.getShoppingCartsByUserId(user.getUserId());
+        // populate authorsDisplay for client templates to consume (avoid complex JS expressions)
+        for (ShoppingCart cart : carts) {
+            if (cart.getBook_info() != null) {
+                try {
+                    String authorsDisplay = null;
+                    if (cart.getBook_info().getAuthors() != null && cart.getBook_info().getAuthors().size() > 0) {
+                        StringBuilder sb = new StringBuilder();
+                        cart.getBook_info().getAuthors().forEach(a -> {
+                            if (a != null) {
+                                if (a.getName() != null && !a.getName().isEmpty()) {
+                                    if (sb.length() > 0) sb.append(", ");
+                                    sb.append(a.getName());
+                                }
+                            }
+                        });
+                        if (sb.length() > 0) authorsDisplay = sb.toString();
+                    }
+                    if (authorsDisplay == null || authorsDisplay.isEmpty()) {
+                        authorsDisplay = cart.getBook_info().getAuthor();
+                    }
+                    cart.getBook_info().setAuthorsDisplay(authorsDisplay);
+                } catch (Exception ignore) {}
+            }
+        }
         return new ResultVO(ResultCode.SUCCESS, carts);
     }
 

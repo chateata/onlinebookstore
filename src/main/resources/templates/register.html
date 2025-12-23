@@ -9,10 +9,11 @@
 </head>
 <body>
 <div th:replace="_fragment::header(null)"></div>
-<div class="login-box" style="margin-top: 150px;">
-    <h1>用户注册</h1>
-    <div class="login-form">
-        <form class="layui-form">
+<div class="login-page">
+    <div class="login-box">
+        <h1>用户注册</h1>
+        <div class="login-form">
+            <form class="layui-form">
             <div class="layui-form-item">
                 <label class="layui-form-label"><i class="layui-icon layui-icon-username" style="font-size: 25px;"></i></label>
                 <div class="layui-input-block">
@@ -36,13 +37,16 @@
                            placeholder="密码至少6个字符" autocomplete="off" class="layui-input">
                 </div>
             </div>
-            <div class="layui-form-item">
-                <div class="layui-input-block">
-                    <button class="layui-btn" lay-submit lay-filter="register-btn" style="width: 100%;">立即注册</button>
-                    <p style="margin-top: 10px;float: left;"><a th:href="@{/login}">已有账号？前往登录</a></p>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="primary-btn" lay-submit lay-filter="register-btn">立即注册</button>
+                        <div class="links">
+                            <a th:href="@{/login}" class="secondary-btn small">已有账号？前往登录</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
