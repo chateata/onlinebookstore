@@ -1,5 +1,7 @@
 ### 项目类型
 
+---
+
 技术栈为：Spring Boot + Thymeleaf（前端模板） + MyBatis（持久层） + MySQL；连接池 Druid，分页 PageHelper。
 
 包结构以 com.shop.bookshop 为根，按职责分层：
@@ -72,6 +74,9 @@
 
 
 ### 运行与初始化
+
+---
+
 - 创建数据库：数据库名为 `bookshop`
 - 在 `application-demo.yml` 中修改数据库用户名/密码
 - 导入数据库脚本：`bookshop.sql`（README 提示需导入）
@@ -85,6 +90,8 @@ java -jar target\bookshop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 ```
 
 ### 访问地址与说明
+
+---
 
 - **默认主机与端口**：`http://localhost:8080/`（`server.port` 未配置时为 8080，`src/main/resources/application.yml` 中默认 profile 为 `demo`）
 - **首页**：`http://localhost:8080/` 或 `http://localhost:8080/index`
