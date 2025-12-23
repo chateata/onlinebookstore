@@ -84,7 +84,7 @@ mvn clean package -DskipTests
 java -jar target\bookshop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 ```
 
-## 访问地址与说明
+### 访问地址与说明
 
 - **默认主机与端口**：`http://localhost:8080/`（`server.port` 未配置时为 8080，`src/main/resources/application.yml` 中默认 profile 为 `demo`）
 - **首页**：`http://localhost:8080/` 或 `http://localhost:8080/index`
