@@ -297,6 +297,30 @@ CREATE TABLE `book_supplier`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
 
 -- ----------------------------
+-- Table structure for supplier_book (供应商书目)
+-- ----------------------------
+DROP TABLE IF EXISTS `supplier_book`;
+CREATE TABLE `supplier_book`  (
+  `supplier_book_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '供应商书目ID',
+  `supplier_id` int(10) UNSIGNED NOT NULL COMMENT '供应商ID',
+  `isbn` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'ISBN',
+  `title` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '书名',
+  `author` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '作者',
+  `press` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '出版社',
+  `price` decimal(10,2) NULL COMMENT '定价',
+  `supply_price` decimal(10,2) NULL COMMENT '供货价',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '描述',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'ACTIVE' COMMENT '状态：ACTIVE-活跃，INACTIVE-停用',
+  `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`supplier_book_id`) USING BTREE,
+  INDEX `idx_supplier_book_supplier`(`supplier_id`) USING BTREE,
+  INDEX `idx_supplier_book_isbn`(`isbn`) USING BTREE,
+  INDEX `idx_supplier_book_title`(`title`) USING BTREE,
+  CONSTRAINT `supplier_book_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `supplier` (`supplier_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Compact;
+
+-- ----------------------------
 -- Table structure for shortage (缺书记录)
 -- ----------------------------
 DROP TABLE IF EXISTS `shortage`;
@@ -516,23 +540,24 @@ BEGIN
   END IF;
 END$$
 
-DROP TRIGGER IF EXISTS `trg_purchase_order_item_after_update_receive`$$
-CREATE TRIGGER `trg_purchase_order_item_after_update_receive` AFTER UPDATE ON `purchase_order_item`
-FOR EACH ROW
-BEGIN
-  DECLARE delta_received INT DEFAULT 0;
-  SET delta_received = NEW.received_quantity - OLD.received_quantity;
-  IF delta_received > 0 THEN
-    -- 增加库存
-    UPDATE `book` SET `stock` = `stock` + delta_received WHERE `book_id` = NEW.book_id;
-    -- 标记关联缺书记录为已处理（如果收到数量覆盖缺书数量）
-    UPDATE `shortage` s
-      JOIN `purchase_order_item` poi ON poi.shortage_id = s.shortage_id
-      SET s.is_processed = b'1'
-      WHERE poi.po_item_id = NEW.po_item_id AND s.is_processed = b'0' AND NEW.received_quantity >= s.quantity;
-  END IF;
-END$$
-DELIMITER ;
+-- 移除触发器，避免与Java代码重复增加库存
+-- DROP TRIGGER IF EXISTS `trg_purchase_order_item_after_update_receive`$$
+-- CREATE TRIGGER `trg_purchase_order_item_after_update_receive` AFTER UPDATE ON `purchase_order_item`
+-- FOR EACH ROW
+-- BEGIN
+--   DECLARE delta_received INT DEFAULT 0;
+--   SET delta_received = NEW.received_quantity - OLD.received_quantity;
+--   IF delta_received > 0 THEN
+--     -- 增加库存
+--     UPDATE `book` SET `stock` = `stock` + delta_received WHERE `book_id` = NEW.book_id;
+--     -- 标记关联缺书记录为已处理（如果收到数量覆盖缺书数量）
+--     UPDATE `shortage` s
+--       JOIN `purchase_order_item` poi ON poi.shortage_id = s.shortage_id
+--       SET s.is_processed = b'1'
+--       WHERE poi.po_item_id = NEW.po_item_id AND s.is_processed = b'0' AND NEW.received_quantity >= s.quantity;
+--   END IF;
+-- END$$
+-- DELIMITER ;
 
 -- ----------------------------
 -- 初始数据：credit_level、publisher（从现有 book.press 提取）、author（从现有 book.author 提取）并建立映射
@@ -564,6 +589,64 @@ INSERT IGNORE INTO `book_author` (`book_id`,`author_id`,`author_order`)
 
 -- 若需要，可插入示例 supplier 与 purchase_order
 INSERT INTO `supplier` (`name`,`contact`,`address`) VALUES ('示例供应商','010-00000000','示例地址');
+
+-- ----------------------------
+-- 示例供应商及其书目数据
+-- ----------------------------
+INSERT INTO `supplier` (`name`,`contact`,`address`) VALUES
+('北京新华书店','010-12345678','北京市朝阳区建国门外大街1号'),
+('上海文艺出版社','021-87654321','上海市徐汇区漕溪北路336号'),
+('广东教育出版社','020-11223344','广州市天河区天润路123号'),
+('浙江大学出版社','0571-55667788','杭州市浙大路38号');
+
+-- 获取新插入的供应商ID（由于是AUTO_INCREMENT，这里我们假设ID从2开始分配）
+-- 北京新华书店 ID=2, 上海文艺出版社 ID=3, 广东教育出版社 ID=4, 浙江大学出版社 ID=5
+
+-- ----------------------------
+-- 示例供应商书目数据
+-- ----------------------------
+INSERT INTO `supplier_book` (`supplier_id`,`isbn`,`title`,`author`,`press`,`price`,`supply_price`,`description`,`status`,`create_time`,`update_time`) VALUES
+-- 示例供应商（ID=1）的书目
+(1,'9787555257036','失乐园（修订版）','渡边淳一','青岛出版社',48.00,35.00,'渡边淳一文学代表作，探讨中年危机与婚外情','ACTIVE','2024-01-10 10:00:00','2024-01-10 10:00:00'),
+(1,'9787544258601','追风筝的人（20周年纪念版）','卡勒德·胡赛尼','上海人民出版社',42.00,30.00,'关于友情、救赎与爱的阿富汗故事','ACTIVE','2024-01-10 10:00:00','2024-01-10 10:00:00'),
+
+-- 北京新华书店（ID=2）的书目
+(2,'9787020000001','百年孤独（精装纪念版）','加西亚·马尔克斯','南海出版公司',89.00,65.00,'诺贝尔文学奖得主马尔克斯代表作，魔幻现实主义巅峰之作','ACTIVE','2024-01-15 10:00:00','2024-01-15 10:00:00'),
+(2,'9787544250001','追风筝的人','卡勒德·胡赛尼','上海人民出版社',39.50,28.00,'一本关于友情、背叛和救赎的故事，让人读完后泪流满面','ACTIVE','2024-01-15 10:00:00','2024-01-15 10:00:00'),
+(2,'9787506360001','小王子（法文原版）','安托万·德·圣埃克苏佩里','人民文学出版社',25.00,18.00,'永远的童话，关于爱、友谊和生命的哲学寓言','ACTIVE','2024-01-15 10:00:00','2024-01-15 10:00:00'),
+(2,'9787532740001','红楼梦（全二册）','曹雪芹','人民文学出版社',68.00,48.00,'中国古典小说巅峰之作，封建社会百科全书','ACTIVE','2024-01-15 10:00:00','2024-01-15 10:00:00'),
+
+-- 上海文艺出版社（ID=3）的书目
+(3,'9787208060001','围城','钱锺书','人民文学出版社',32.00,24.00,'钱锺书唯一长篇小说，讽刺小说经典','ACTIVE','2024-01-16 10:00:00','2024-01-16 10:00:00'),
+(3,'9787530210001','活着','余华','南海出版公司',28.00,20.00,'余华代表作，讲述一个普通人一生的苦难与坚韧','ACTIVE','2024-01-16 10:00:00','2024-01-16 10:00:00'),
+(3,'9787544240001','许三观卖血记','余华','南海出版公司',26.00,18.00,'余华作品，关于贫穷与尊严的故事','ACTIVE','2024-01-16 10:00:00','2024-01-16 10:00:00'),
+(3,'9787540480001','兄弟','余华','南海出版公司',45.00,32.00,'余华长篇小说，探讨中国近现代历史变迁','ACTIVE','2024-01-16 10:00:00','2024-01-16 10:00:00'),
+
+-- 广东教育出版社（ID=4）的书目
+(4,'9787107170001','高中数学必修1','人民教育出版社','人民教育出版社',28.00,20.00,'高中数学教材，必修第一册','ACTIVE','2024-01-17 10:00:00','2024-01-17 10:00:00'),
+(4,'9787107170002','高中数学必修2','人民教育出版社','人民教育出版社',32.00,23.00,'高中数学教材，必修第二册','ACTIVE','2024-01-17 10:00:00','2024-01-17 10:00:00'),
+(4,'9787107170003','高中数学必修3','人民教育出版社','人民教育出版社',30.00,21.00,'高中数学教材，必修第三册','ACTIVE','2024-01-17 10:00:00','2024-01-17 10:00:00'),
+(4,'9787107170004','高中数学必修4','人民教育出版社','人民教育出版社',35.00,25.00,'高中数学教材，必修第四册','ACTIVE','2024-01-17 10:00:00','2024-01-17 10:00:00'),
+(4,'9787107170005','高中数学必修5','人民教育出版社','人民教育出版社',33.00,23.00,'高中数学教材，必修第五册','ACTIVE','2024-01-17 10:00:00','2024-01-17 10:00:00'),
+
+-- 浙江大学出版社（ID=5）的书目
+(5,'9787308050001','高等数学（上册）','同济大学数学系','高等教育出版社',45.00,32.00,'大学数学基础教材，微积分部分','ACTIVE','2024-01-18 10:00:00','2024-01-18 10:00:00'),
+(5,'9787308050002','高等数学（下册）','同济大学数学系','高等教育出版社',48.00,34.00,'大学数学基础教材，级数与常微分方程部分','ACTIVE','2024-01-18 10:00:00','2024-01-18 10:00:00'),
+(5,'9787111120001','大学物理（力学）','程守洙','高等教育出版社',38.00,27.00,'大学物理教材，力学部分','ACTIVE','2024-01-18 10:00:00','2024-01-18 10:00:00'),
+(5,'9787111120002','大学物理（电磁学）','程守洙','高等教育出版社',42.00,30.00,'大学物理教材，电磁学部分','ACTIVE','2024-01-18 10:00:00','2024-01-18 10:00:00'),
+(5,'9787040200001','线性代数','北京大学数学系','高等教育出版社',35.00,25.00,'大学数学基础教材，线性代数部分','ACTIVE','2024-01-18 10:00:00','2024-01-18 10:00:00');
+
+-- ----------------------------
+-- 扩展 purchase_order_item 表，支持供应商书目
+-- ----------------------------
+ALTER TABLE `purchase_order_item`
+  ADD COLUMN `supplier_book_id` int(10) UNSIGNED NULL COMMENT '供应商书目ID' AFTER `book_id`,
+  ADD INDEX `idx_poi_supplier_book`(`supplier_book_id`),
+  ADD CONSTRAINT `purchase_order_item_ibfk_supplier_book` FOREIGN KEY (`supplier_book_id`) REFERENCES `supplier_book` (`supplier_book_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- 修改book_id字段为可空，因为现在可能使用supplier_book_id
+ALTER TABLE `purchase_order_item`
+  MODIFY COLUMN `book_id` int(10) UNSIGNED NULL COMMENT '书籍ID（普通书籍）';
 INSERT INTO `purchase_order` (`supplier_id`,`order_date`,`expected_arrival_date`,`status`,`total_amount`)
   VALUES (LAST_INSERT_ID(), NOW(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), '待发送', 0.00);
 

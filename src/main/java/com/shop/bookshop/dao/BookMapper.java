@@ -17,6 +17,9 @@ public interface BookMapper {
     List<Book> selectAllByCategoryCode(String categoryCode);
 
     List<Book> selectByBooks(Book book);
+
+    List<Book> selectByIsbn(String isbn);
+
     /**
      * Atomically decrement stock if enough inventory exists.
      * Returns number of rows affected (1 if success, 0 if not enough stock).

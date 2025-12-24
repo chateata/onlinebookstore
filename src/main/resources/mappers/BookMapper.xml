@@ -170,7 +170,20 @@
       <if test="isbn != null">
       and  isbn = #{isbn,jdbcType=VARCHAR}
       </if>
+      <if test="stock != null">
+      and  stock = #{stock,jdbcType=INTEGER}
+      </if>
+      <if test="minStock != null">
+      and  stock >= #{minStock,jdbcType=INTEGER}
+      </if>
     </where>
+  </select>
+
+  <select id="selectByIsbn" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from book
+    where isbn = #{isbn,jdbcType=VARCHAR}
   </select>
   <update id="decrementStockIfEnough" parameterType="map">
     update book

@@ -44,9 +44,22 @@ public class PurchaseController {
     }
 
     @PostMapping("/receive")
-    public ResultVO<Void> receive(@RequestParam Integer poItemId, @RequestParam Integer addedReceived) {
+    public ResultVO<Void> receive(@RequestParam Integer poItemId, @RequestParam(required = false) Integer addedReceived) {
+        if (poItemId == null) {
+            return ResultVO.error(ResultCode.FAILED, "参数错误");
+        }
+        if (addedReceived == null) {
+            // compute remaining
+            com.shop.bookshop.pojo.PurchaseOrderItem poi = purchaseOrderItemMapper.selectByPoItemId(poItemId);
+            if (poi == null) {
+                return ResultVO.error(ResultCode.FAILED, "采购单项不存在");
+            }
+            int qty = poi.getQuantity() == null ? 0 : poi.getQuantity();
+            int recv = poi.getReceivedQuantity() == null ? 0 : poi.getReceivedQuantity();
+            addedReceived = Math.max(0, qty - recv);
+        }
         purchaseService.receivePurchaseOrderItem(poItemId, addedReceived);
-        return new ResultVO<>(ResultCode.SUCCESS, null);
+        return ResultVO.success(null);
     }
 }
 

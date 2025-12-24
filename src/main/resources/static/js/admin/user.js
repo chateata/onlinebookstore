@@ -11,21 +11,53 @@ layui.use(['table', 'form', 'jquery', 'layer', 'element'], function() {
 		cols: [
 			[{
 				field: 'userId',
-				title: 'ID',
+				title: '网上ID',
 				fixed: 'left',
-				sort: true
+				sort: true,
+				width: 100
 			}, {
 				field: 'userName',
-				title: '用户名',
+				title: '名称',
+				width: 120
+			}, {
+				field: 'password',
+				title: '登录密码',
+				width: 120,
+				templet: function(res) {
+					return '******';
+				}
 			}, {
 				field: 'email',
 				title: '邮箱',
+				width: 150,
 				templet: function(res) {
 					return '<em>' + res.email + '</em>';
 				}
 			}, {
+				field: 'accountBalance',
+				title: '账户余额',
+				width: 100,
+				templet: function(res) {
+					return '¥' + (res.accountBalance || 0).toFixed(2);
+				}
+			}, {
+				field: 'creditLevelName',
+				title: '信用等级',
+				width: 100,
+				templet: function(res) {
+					return res.creditLevel ? res.creditLevel.levelName : '未设置';
+				}
+			}, {
+				field: 'overdraftLimit',
+				title: '信用额度',
+				width: 100,
+				templet: function(res) {
+					return res.creditLevel ? '¥' + res.creditLevel.overdraftLimit : '¥0.00';
+				}
+			}, {
 				field: 'joinTime',
 				title: '注册时间',
+				width: 120
 			}, {
 				fixed: 'right',
 				title: '操作',
@@ -75,19 +107,36 @@ layui.use(['table', 'form', 'jquery', 'layer', 'element'], function() {
 				area: ['400px'],
 				btn: ['更新'],
 				yes: function(index1) {
-					let new_data = form.val("user-form");
-					// normalize types
-					if (new_data.accountBalance !== undefined && new_data.accountBalance !== null && new_data.accountBalance !== "") {
-						new_data.accountBalance = parseFloat(new_data.accountBalance);
+					let form_data = form.val("user-form");
+					let update_data = {
+						userId: form_data.userId,
+						userName: form_data.userName,
+						password: form_data.password,
+						email: form_data.email
+					};
+
+					// 处理余额调整
+					if (form_data.balanceAdjustment !== undefined && form_data.balanceAdjustment !== null && form_data.balanceAdjustment !== "") {
+						let adjustment = parseFloat(form_data.balanceAdjustment);
+						let currentBalance = parseFloat((data.accountBalance || 0).toFixed(2));
+						update_data.accountBalance = currentBalance + adjustment;
+						if (update_data.accountBalance < 0) {
+							return layer.msg("调整后余额不能为负数", {icon: 2});
 					}
-					if (new_data.creditLevelId !== undefined && new_data.creditLevelId !== null && new_data.creditLevelId !== "") {
-						new_data.creditLevelId = parseInt(new_data.creditLevelId);
+					} else {
+						update_data.accountBalance = data.accountBalance || 0;
 					}
-					console.log(new_data);
+
+					// 处理信用等级
+					if (form_data.creditLevelId !== undefined && form_data.creditLevelId !== null && form_data.creditLevelId !== "") {
+						update_data.creditLevelId = parseInt(form_data.creditLevelId);
+					}
+
+					console.log(update_data);
 					$.ajax({
 						url: '/user/update',
 						type: 'post',
-						data: JSON.stringify(new_data),
+						data: JSON.stringify(update_data),
 						contentType: 'application/json',
 						dataType: 'json',
 						success: function(res) {
@@ -100,7 +149,8 @@ layui.use(['table', 'form', 'jquery', 'layer', 'element'], function() {
 								icon: 1,
 								time: 1300
 							}, function() {
-								obj.update(new_data);
+								// 刷新表格数据
+								user_tb.reload();
 								layer.close(index1);
 							});
 						}
@@ -109,6 +159,24 @@ layui.use(['table', 'form', 'jquery', 'layer', 'element'], function() {
 				success: function() {
 					//填充表单（编辑状态）
 					form.val("user-form", data);
+					// 显示当前余额
+					$("#currentBalance").val('¥' + (data.accountBalance || 0).toFixed(2));
+					// 显示当前信用额度
+					$("#currentLimit").val(data.creditLevel ? '¥' + data.creditLevel.overdraftLimit : '¥0.00');
+
+					// 加载信用等级列表
+					$.getJSON("/creditLevel/list", function(res) {
+						if (res.code == 0) {
+							var options = '<option value="">请选择信用等级</option>';
+							$.each(res.data, function(index, item) {
+								var selected = data.creditLevelId == item.levelId ? 'selected' : '';
+								options += '<option value="' + item.levelId + '" ' + selected + '>' +
+									item.levelName + ' (折扣:' + item.discountRate + ', 额度:¥' + item.overdraftLimit + ')</option>';
+							});
+							$("#creditLevelSelect").html(options);
+							form.render('select');
+						}
+					});
 				}
 			});
 		}

@@ -59,6 +59,17 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 				title: '库存',
 				width: 80
 			}, {
+				field: 'shortageStatus',
+				title: '缺书状态',
+				width: 100,
+				templet: function(res) {
+					if (res.stock === 0) {
+						return '<span class="layui-badge layui-bg-orange">缺书</span>';
+					} else {
+						return '<span class="layui-badge layui-bg-green">有货</span>';
+					}
+				}
+			}, {
 				fixed: 'right',
 				title: '操作',
 				toolbar: '#barDemo',
@@ -157,9 +168,21 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 		if (book_tb_this != null) {
 			book_tb_this.where = {};
 		}
+
+		// 处理库存筛选
+		var searchData = $.extend({}, data.field);
+		if (searchData.stockFilter) {
+			if (searchData.stockFilter === 'out_of_stock') {
+				searchData.stock = 0; // 只查询库存为0的书籍
+			} else if (searchData.stockFilter === 'in_stock') {
+				searchData.minStock = 1; // 查询库存大于0的书籍
+			}
+			delete searchData.stockFilter; // 删除前端筛选字段，后端不需要
+		}
+
 		book_tb.reload({
 			url: '/book/search',
-			where: data.field,
+			where: searchData,
 			page: {
 				curr: 1
 			},

@@ -9,6 +9,12 @@
     <result column="description" property="description" />
   </resultMap>
   <sql id="Base_Column_List">level_id, level_name, discount_rate, overdraft_limit, description</sql>
+  <delete id="deleteByLevelId" parameterType="java.lang.Integer">
+    delete from credit_level where level_id = #{levelId}
+  </delete>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from credit_level order by level_id
+  </select>
   <select id="selectByLevelId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select <include refid="Base_Column_List" /> from credit_level where level_id = #{levelId}
   </select>
