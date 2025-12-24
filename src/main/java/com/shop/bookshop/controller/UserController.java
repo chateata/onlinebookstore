@@ -46,8 +46,30 @@ public class UserController {
      */
     @DeleteMapping("/list/{userId}")
     public ResultVO<Void> deleteUser(@PathVariable("userId") Integer userId) {
-        int users =userService.deleteByUserId(userId);
+        userService.deleteByUserId(userId);
         return new ResultVO<Void>(ResultCode.SUCCESS,null);
+    }
+
+    /**
+     * 管理员调整用户余额（delta 可正可负），返回最新余额
+     */
+    @PostMapping("/adjustBalance")
+    public ResultVO<java.math.BigDecimal> adjustBalance(@RequestParam Integer userId, @RequestParam java.math.BigDecimal delta) {
+        if (userId == null || delta == null) {
+            return ResultVO.error(ResultCode.FAILED, "参数错误");
+        }
+        com.shop.bookshop.pojo.User u = userService.selectByUserId(userId);
+        if (u == null) {
+            return new ResultVO<>(ResultCode.RECORD_NOT_FOUND, null);
+        }
+        java.math.BigDecimal cur = u.getAccountBalance() == null ? java.math.BigDecimal.ZERO : u.getAccountBalance();
+        java.math.BigDecimal next = cur.add(delta);
+        if (next.compareTo(java.math.BigDecimal.ZERO) < 0) {
+            return ResultVO.error(ResultCode.FAILED, "余额不能为负");
+        }
+        u.setAccountBalance(next);
+        userService.updateByUserId(u);
+        return new ResultVO<>(ResultCode.SUCCESS, next);
     }
 
 /*    暂时不需要
@@ -81,7 +103,7 @@ public class UserController {
      */
     @PostMapping("/update")
     public ResultVO<Void> updateUser(@RequestBody @Valid User record) {
-        int users =userService.updateByUserId(record);
+        userService.updateByUserId(record);
         return new ResultVO<Void>(ResultCode.SUCCESS,null);
     }
 
@@ -105,12 +127,12 @@ public class UserController {
     public ResultVO<Map<String,Object>> getUserCredit(HttpSession session) {
         Object obj = session.getAttribute("user");
         if (obj == null) {
-            return new ResultVO(ResultCode.USER_NOT_LOGGED_IN);
+            return ResultVO.<Map<String,Object>>error(ResultCode.USER_NOT_LOGGED_IN);
         }
         User sessionUser = (User) obj;
         User fresh = userService.selectByUserId(sessionUser.getUserId());
         if (fresh == null) {
-            return new ResultVO(ResultCode.USER_NOT_FOUND);
+            return ResultVO.<Map<String,Object>>error(ResultCode.USER_NOT_FOUND);
         }
         com.shop.bookshop.pojo.CreditLevel cl = null;
         if (fresh.getCreditLevelId() != null) {

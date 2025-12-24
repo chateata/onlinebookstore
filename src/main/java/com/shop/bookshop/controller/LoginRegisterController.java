@@ -51,10 +51,8 @@ public class LoginRegisterController {
     @PostMapping("/admin/login")
     @ResponseBody
     public ResultVO adminLoginHandler(@RequestBody Admin admin, HttpSession session) {
-        if(!("admin".equals(admin.getAdminName())&& "123456".equals(admin.getPassword()))){
-            throw new CustomizeException(ResultCode.FAILED,"管理员账户或密码错误");
-        }
-        session.setAttribute("admin",admin);
+        // delegate to service which now checks DB-backed admin
+        loginRegisterService.adminLogin(admin, session);
         return new ResultVO(ResultCode.SUCCESS,"/admin/book_manage");
     }
 

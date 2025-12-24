@@ -16,6 +16,8 @@ public class LoginRegisterServiceImpl implements LoginRegisterService {
 
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private com.shop.bookshop.dao.AdminMapper adminMapper;
 
     /**
      * 用户登录处理
@@ -58,6 +60,13 @@ public class LoginRegisterServiceImpl implements LoginRegisterService {
 
     @Override
     public void adminLogin(Admin admin, HttpSession session) {
-
+        com.shop.bookshop.pojo.Admin dbAdmin = adminMapper.selectByAdminName(admin.getAdminName());
+        if (dbAdmin == null) {
+            throw new CustomizeException(ResultCode.USER_NOT_FOUND);
+        }
+        if (!dbAdmin.getPassword().equals(admin.getPassword())) {
+            throw new CustomizeException(ResultCode.PASSWORD_ERROR);
+        }
+        session.setAttribute("admin", dbAdmin);
     }
 }

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Date;
+import java.math.BigDecimal;
 
 @Service
 public class PurchaseServiceImpl implements PurchaseService {
@@ -35,6 +37,36 @@ public class PurchaseServiceImpl implements PurchaseService {
         if (purchaseOrder == null || purchaseOrder.getItems() == null || purchaseOrder.getItems().isEmpty()) {
             throw new CustomizeException(ResultCode.FAILED, "采购单或采购单项不能为空");
         }
+        // Ensure order date is set (DB requires non-null)
+        if (purchaseOrder.getOrderDate() == null) {
+            purchaseOrder.setOrderDate(new Date());
+        }
+        // Compute totalAmount if not set, and normalize item fields
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (PurchaseOrderItem item : purchaseOrder.getItems()) {
+            if (item.getUnitPrice() == null) {
+                // try to default unitPrice from book price
+                Book book = bookMapper.selectByBookId(item.getBookId());
+                if (book != null && book.getPrice() != null) {
+                    item.setUnitPrice(book.getPrice());
+                } else {
+                    item.setUnitPrice(BigDecimal.ZERO);
+                }
+            }
+            Integer qty = item.getQuantity() == null ? 0 : item.getQuantity();
+            BigDecimal line = item.getUnitPrice().multiply(new BigDecimal(qty)).setScale(2, BigDecimal.ROUND_HALF_UP);
+            totalAmount = totalAmount.add(line);
+            if (item.getReceivedQuantity() == null) {
+                item.setReceivedQuantity(0);
+            }
+        }
+        if (purchaseOrder.getTotalAmount() == null) {
+            purchaseOrder.setTotalAmount(totalAmount);
+        }
+        if (purchaseOrder.getStatus() == null) {
+            purchaseOrder.setStatus("PENDING");
+        }
+
         purchaseOrderMapper.insert(purchaseOrder);
         Integer poId = purchaseOrder.getPoId();
         for (PurchaseOrderItem item : purchaseOrder.getItems()) {

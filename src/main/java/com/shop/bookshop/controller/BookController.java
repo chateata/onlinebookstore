@@ -74,6 +74,28 @@ public class BookController {
     }
 
     /**
+     * 调整库存（可传 delta 为正/负，表示增加/减少库存）
+     */
+    @PostMapping("/adjustStock")
+    public ResultVO adjustStock(Integer bookId, Integer delta) {
+        if (bookId == null || delta == null) {
+            return new ResultVO<>(ResultCode.FAILED, "参数错误");
+        }
+        Book book = bookService.bookSearchById(bookId);
+        if (book == null) {
+            return new ResultVO<>(ResultCode.RECORD_NOT_FOUND, null);
+        }
+        Integer cur = book.getStock() == null ? 0 : book.getStock();
+        int next = cur + delta;
+        if (next < 0) {
+            return new ResultVO<>(ResultCode.FAILED, "库存不能为负");
+        }
+        book.setStock(next);
+        bookService.bookUpdate(book);
+        return new ResultVO<>(ResultCode.SUCCESS, null);
+    }
+
+    /**
      * 多条件搜索  
      * @param book
      * @param page

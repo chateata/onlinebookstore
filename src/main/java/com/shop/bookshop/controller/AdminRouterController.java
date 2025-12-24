@@ -38,6 +38,24 @@ public class AdminRouterController {
         return "admin/add_book";
     }
 
+    // 供应商管理页面
+    @GetMapping("/supplier_manage")
+    public String toSupplierManage(){
+        return "admin/supplier";
+    }
+
+    // 采购管理页面
+    @GetMapping("/purchase_manage")
+    public String toPurchaseManage(){
+        return "admin/purchase";
+    }
+
+    // 库存管理页面
+    @GetMapping("/inventory_manage")
+    public String toInventoryManage(){
+        return "admin/inventory";
+    }
+
     //后台登录页面
     @GetMapping("/login")
     public String toAdminLogin(){

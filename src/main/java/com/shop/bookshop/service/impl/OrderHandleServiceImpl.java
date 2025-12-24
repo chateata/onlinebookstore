@@ -106,7 +106,14 @@ public class OrderHandleServiceImpl implements OrderHandleService {
         }
         // 插入父订单（回写 orderId）
         orderMapper.insert(order);
-        // 插入订单子项并删除购物车记录（库存/缺书由数据库触发器处理）
+        // 原子性地扣减库存：在同一事务内对每个订单项执行 UPDATE ... WHERE stock>=qty
+        for (OrderItem orderItem : order.getOrderItems()) {
+            int updated = bookMapper.decrementStockIfEnough(orderItem.getBookId(), orderItem.getQuantity());
+            if (updated == 0) {
+                throw new CustomizeException(ResultCode.INSUFFICIENT_STOCK, "库存不足或已被其他订单占用，bookId=" + orderItem.getBookId());
+            }
+        }
+        // 插入订单子项并删除购物车记录
         for (OrderItem orderItem : order.getOrderItems()) {
             orderItem.setOrderId(order.getOrderId());
             // 确保 shippedQuantity 非 null（数据库列为 NOT NULL）
