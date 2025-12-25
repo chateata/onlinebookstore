@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="_adminfragment::head(~{::title},~{})">
+    <meta charset="utf-8">
+    <title>供应商管理</title>
+    <link rel="stylesheet" type="text/css" href="../../static/lib/layui/css/layui.css"/>
+    <script src="../../static/lib/layui/layui.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <div th:replace="_adminfragment::header"></div>
+    <div th:replace="_adminfragment::side('supplier')"></div>
+    <div class="layui-body">
+        <div style="padding:20px;">
+            <div class="layui-form">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">供应商名称</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" autocomplete="off" placeholder="请输入供应商名称" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="search_btn">查询</button>
+                    </div>
+                </div>
+            </div>
+            <table class="layui-hide" id="supplier_tb" lay-filter="supplier_tb"></table>
+
+            <script type="text/html" id="barDemo">
+                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="manageBooks">管理书目</a>
+            </script>
+        </div>
+    </div>
+    <div th:replace="_adminfragment::footer"></div>
+</div>
+<script th:src="@{/js/admin/supplier.js}" type="text/javascript" charset="utf-8"></script>
+<script type="text/html" id="supplier_form_tmpl">
+    <form class="layui-form" lay-filter="supplier-form" style="margin-right:30px;margin-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">供应商ID</label>
+            <div class="layui-input-block">
+                <input type="text" name="supplierId" readonly class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系人</label>
+            <div class="layui-input-block">
+                <input type="text" name="contact" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+                <textarea name="address" class="layui-textarea"></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- 供应商书目管理模态框 -->
+<script type="text/html" id="supplier_books_tmpl">
+    <div style="padding:16px;">
+        <div class="layui-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">ISBN</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="searchIsbn" placeholder="请输入ISBN" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">书名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="searchTitle" placeholder="请输入书名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="search_supplier_books">查询</button>
+                    <button class="layui-btn layui-btn-normal layui-btn-sm" id="add_supplier_book">添加书目</button>
+                </div>
+            </div>
+        </div>
+        <table class="layui-hide" id="supplier_books_tb" lay-filter="supplier_books_tb"></table>
+    </div>
+</script>
+
+<!-- 供应商书目编辑表单 -->
+<script type="text/html" id="supplier_book_form_tmpl">
+    <form class="layui-form" lay-filter="supplier-book-form" style="margin-right:30px;margin-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">书目ID</label>
+            <div class="layui-input-block">
+                <input type="text" name="supplierBookId" placeholder="系统自动生成，无需输入" readonly class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">供应商ID</label>
+            <div class="layui-input-block">
+                <input type="text" name="supplierId"  readonly placeholder="系统自动生成，无需输入" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">丛书</label>
+            <div class="layui-input-block">
+                <select name="seriesId" id="supplierBookSeriesSelect" lay-filter="supplierBookSeries">
+                    <option value="">请选择丛书</option>
+                    <option value="none">不属于任何丛书</option>
+                    <option value="new">新建丛书系列</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item" id="newSeriesInput" style="display: none;">
+            <label class="layui-form-label">新丛书名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="newSeriesName" placeholder="请输入新的丛书系列名称" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">ISBN</label>
+            <div class="layui-input-block">
+                <input type="text" name="isbn" required lay-verify="required" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">书名</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" required lay-verify="required" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">作者</label>
+            <div class="layui-input-block">
+                <input type="text" name="author" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">出版社</label>
+            <div class="layui-input-block">
+                <input type="text" name="press" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">定价</label>
+            <div class="layui-input-block">
+                <input type="number" step="0.01" name="price" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">供货价</label>
+            <div class="layui-input-block">
+                <input type="number" step="0.01" name="supplyPrice" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                <select name="status">
+                    <option value="ACTIVE">活跃</option>
+                    <option value="INACTIVE">停用</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">描述</label>
+            <div class="layui-input-block">
+                <textarea name="description" class="layui-textarea"></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<script type="text/html" id="supplier_books_bar">
+    <a class="layui-btn layui-btn-xs" lay-event="edit_book">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del_book">删除</a>
+</script>
+</body>
+</html>
+
+
+
+

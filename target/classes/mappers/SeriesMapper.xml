@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.bookshop.dao.SeriesMapper">
+  <resultMap id="BaseResultMap" type="com.shop.bookshop.pojo.Series">
+    <id column="series_id" property="seriesId" />
+    <result column="series_name" property="seriesName" />
+    <result column="description" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">series_id, series_name, description</sql>
+  <select id="selectBySeriesId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from series where series_id = #{seriesId}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from series order by series_name
+  </select>
+  <insert id="insert" parameterType="com.shop.bookshop.pojo.Series" useGeneratedKeys="true" keyProperty="seriesId">
+    insert into series (series_name, description) values (#{seriesName}, #{description})
+  </insert>
+  <update id="updateBySeriesId" parameterType="com.shop.bookshop.pojo.Series">
+    update series
+    <set>
+      <if test="seriesName != null">series_name = #{seriesName},</if>
+      <if test="description != null">description = #{description},</if>
+    </set>
+    where series_id = #{seriesId}
+  </update>
+  <delete id="deleteBySeriesId" parameterType="java.lang.Integer">
+    delete from series where series_id = #{seriesId}
+  </delete>
+</mapper>
+
+

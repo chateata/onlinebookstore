@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shop.bookshop.dao.PublisherMapper">
+  <resultMap id="BaseResultMap" type="com.shop.bookshop.pojo.Publisher">
+    <id column="publisher_id" property="publisherId" />
+    <result column="name" property="name" />
+    <result column="address" property="address" />
+    <result column="contact" property="contact" />
+  </resultMap>
+  <sql id="Base_Column_List">publisher_id, name, address, contact</sql>
+  <select id="selectByPublisherId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from publisher where publisher_id = #{publisherId}
+  </select>
+  <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from publisher where name = #{name}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from publisher order by name
+  </select>
+  <insert id="insert" parameterType="com.shop.bookshop.pojo.Publisher" useGeneratedKeys="true" keyProperty="publisherId">
+    insert into publisher (name, address, contact) values (#{name}, #{address}, #{contact})
+  </insert>
+  <update id="updateByPublisherId" parameterType="com.shop.bookshop.pojo.Publisher">
+    update publisher
+    <set>
+      <if test="name != null">name = #{name},</if>
+      <if test="address != null">address = #{address},</if>
+      <if test="contact != null">contact = #{contact},</if>
+    </set>
+    where publisher_id = #{publisherId}
+  </update>
+  <delete id="deleteByPublisherId" parameterType="java.lang.Integer">
+    delete from publisher where publisher_id = #{publisherId}
+  </delete>
+</mapper>
+
+

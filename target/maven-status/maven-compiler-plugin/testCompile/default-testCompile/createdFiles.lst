@@ -1,0 +1,7 @@
+com\shop\bookshop\service\ShoppingCartServiceTest.class
+com\shop\bookshop\integration\PurchaseFlowIntegrationTest.class
+com\shop\bookshop\service\BookDisplayServiceTest.class
+com\shop\bookshop\service\LoginRegisterServiceTest.class
+com\shop\bookshop\BookshopApplicationTests.class
+com\shop\bookshop\dao\UserMapperTest.class
+com\shop\bookshop\service\OrderHandleServiceTest.class

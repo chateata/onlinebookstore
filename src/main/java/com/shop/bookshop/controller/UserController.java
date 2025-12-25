@@ -144,4 +144,65 @@ public class UserController {
         return new ResultVO<Map<String,Object>>(ResultCode.SUCCESS, data);
     }
 
+    /**
+     * 获取当前登录用户的基本信息（用户名、密码等）
+     */
+    @GetMapping("/info")
+    public ResultVO<Map<String,Object>> getUserInfo(HttpSession session) {
+        Object obj = session.getAttribute("user");
+        if (obj == null) {
+            return ResultVO.<Map<String,Object>>error(ResultCode.USER_NOT_LOGGED_IN);
+        }
+        User sessionUser = (User) obj;
+        User fresh = userService.selectByUserId(sessionUser.getUserId());
+        if (fresh == null) {
+            return ResultVO.<Map<String,Object>>error(ResultCode.USER_NOT_FOUND);
+        }
+        Map<String,Object> data = new HashMap<>();
+        data.put("userId", fresh.getUserId());
+        data.put("userName", fresh.getUserName());
+        data.put("email", fresh.getEmail());
+        data.put("joinTime", fresh.getJoinTime());
+        return new ResultVO<Map<String,Object>>(ResultCode.SUCCESS, data);
+    }
+
+    /**
+     * 修改当前登录用户的密码
+     */
+    @PostMapping("/changePassword")
+    public ResultVO<Void> changePassword(@RequestBody Map<String, String> passwordData, HttpSession session) {
+        Object obj = session.getAttribute("user");
+        if (obj == null) {
+            return ResultVO.<Void>error(ResultCode.USER_NOT_LOGGED_IN);
+        }
+
+        String oldPassword = passwordData.get("oldPassword");
+        String newPassword = passwordData.get("newPassword");
+
+        if (oldPassword == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return ResultVO.<Void>error(ResultCode.FAILED, "密码不能为空");
+        }
+
+        if (newPassword.length() < 6) {
+            return ResultVO.<Void>error(ResultCode.FAILED, "新密码至少6个字符");
+        }
+
+        User sessionUser = (User) obj;
+        User fresh = userService.selectByUserId(sessionUser.getUserId());
+        if (fresh == null) {
+            return ResultVO.<Void>error(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 验证旧密码
+        if (!oldPassword.equals(fresh.getPassword())) {
+            return ResultVO.<Void>error(ResultCode.FAILED, "旧密码错误");
+        }
+
+        // 更新密码
+        fresh.setPassword(newPassword);
+        userService.updateByUserId(fresh);
+
+        return new ResultVO<Void>(ResultCode.SUCCESS, null);
+    }
+
 }
