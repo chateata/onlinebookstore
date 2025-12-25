@@ -84,6 +84,7 @@ public class OrderHandleServiceImpl implements OrderHandleService {
             // 按折扣计算单价与小计（四舍五入到2位）
             BigDecimal unitPrice = book.getPrice().multiply(BigDecimal.ONE.subtract(discountRate)).setScale(2, BigDecimal.ROUND_HALF_UP);
             BigDecimal subtotal = unitPrice.multiply(new BigDecimal(orderItem.getQuantity())).setScale(2, BigDecimal.ROUND_HALF_UP);
+            orderItem.setPrice(unitPrice);  // 设置折后价格
             orderItem.setUnitPrice(unitPrice);
             orderItem.setSubtotal(subtotal);
             totalAmount = totalAmount.add(subtotal);

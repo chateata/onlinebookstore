@@ -70,7 +70,7 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 				title: '缺书状态',
 				width: 100,
 				templet: function(res) {
-					if (res.stock === 0) {
+					if (res.stock === 5) {
 						return '<span class="layui-badge layui-bg-orange">缺书</span>';
 					} else {
 						return '<span class="layui-badge layui-bg-green">有货</span>';

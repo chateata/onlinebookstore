@@ -61,14 +61,16 @@ public class BookDisplayController {
     }
 
     /**
-     * 首页根据书名搜索书籍
-     * @param bookName
+     * 首页根据不同条件搜索书籍
+     * @param keyword 搜索关键词
+     * @param searchType 搜索类型：isbn, bookName, press, all
      * @return
      */
     @GetMapping("/books/search")
     @ResponseBody
-    public ResultVO searchBook(@RequestParam(required = true) String bookName) {
-        List<Book> books = bookDisplayService.searchBooksByBookName(1, 10, bookName);
+    public ResultVO searchBook(@RequestParam(required = true) String keyword,
+                              @RequestParam(defaultValue = "all") String searchType) {
+        List<Book> books = bookDisplayService.searchBooks(1, 10, keyword, searchType);
         PageInfo pageInfo = new PageInfo(books);
         return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), books);
     }

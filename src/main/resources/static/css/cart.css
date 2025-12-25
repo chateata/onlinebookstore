@@ -31,6 +31,22 @@
 .cart-container .cart .cart-info p:nth-child(3){
 	color: #aaa;
 }
+.cart-container .cart .cart-info .original-price{
+	text-decoration: line-through;
+	color: #999;
+	font-size: 14px;
+}
+.cart-container .cart .cart-info .discount-text{
+	color: #ff5722;
+	font-size: 13px;
+	font-weight: 500;
+	margin-left: 8px;
+}
+.cart-container .cart .cart-info .discounted-price{
+	color: #5FB878;
+	font-size: 16px;
+	font-weight: 700;
+}
 	
 .cart-container .cart .cart-info p:nth-child(4){
 	padding-top: 15px;

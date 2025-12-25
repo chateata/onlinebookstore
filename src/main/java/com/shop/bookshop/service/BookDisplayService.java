@@ -16,5 +16,7 @@ public interface BookDisplayService {
     Book getBookDetailsByBookId(Integer bookId);
 
     List<Book> searchBooksByBookName(Integer page, Integer limit,String bookName);
+
+    List<Book> searchBooks(Integer page, Integer limit, String keyword, String searchType);
 }
 

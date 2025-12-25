@@ -10,6 +10,27 @@
        or author like CONCAT('%', #{bookName}, '%')
        or press like CONCAT('%', #{bookName}, '%')
   </select>
+
+  <select id="searchByIsbn" parameterType="java.lang.String" resultMap="com.shop.bookshop.dao.BookMapper.BaseResultMap">
+    select
+    <include refid="com.shop.bookshop.dao.BookMapper.Base_Column_List" />
+    from book
+    where isbn = #{isbn}
+  </select>
+
+  <select id="searchByBookName" parameterType="java.lang.String" resultMap="com.shop.bookshop.dao.BookMapper.BaseResultMap">
+    select
+    <include refid="com.shop.bookshop.dao.BookMapper.Base_Column_List" />
+    from book
+    where book_name like CONCAT('%', #{bookName}, '%')
+  </select>
+
+  <select id="searchByPress" parameterType="java.lang.String" resultMap="com.shop.bookshop.dao.BookMapper.BaseResultMap">
+    select
+    <include refid="com.shop.bookshop.dao.BookMapper.Base_Column_List" />
+    from book
+    where press like CONCAT('%', #{press}, '%')
+  </select>
 </mapper>
 
 

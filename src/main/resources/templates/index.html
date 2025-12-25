@@ -42,8 +42,14 @@
 <div class="search-bar">
     <div class="page-wrapper">
         <div class="search-input">
-            <input type="text" id="keyword-input" name="keyword" placeholder="输入搜索内容" autocomplete="off"
-                   class="layui-input">
+            <select id="search-type" class="layui-select" style="width: 120px;">
+                <option value="all">全部</option>
+                <option value="isbn">ISBN</option>
+                <option value="bookName">书名</option>
+                <option value="press">出版社</option>
+            </select>
+            <input type="text" id="keyword-input" name="keyword" placeholder="请输入ISBN、书名或出版社" autocomplete="off"
+                   class="layui-input" style="width: calc(100% - 130px);">
             <button type="button" id="search-btn" class="layui-btn">搜索</button>
         </div>
     </div>
@@ -54,7 +60,7 @@
             <li lay-id="search">搜索结果</li>
             <li class="layui-this">全部</li>
         </ul>
-        <div class="layui-tab-content" id="content" style="height: 520px;"></div>
+        <div class="layui-tab-content" id="content"></div>
     </div>
     <div class="page-util" id="page-util" style="text-align: center;"></div>
 </div>
@@ -64,18 +70,36 @@
 </body>
 <script type="text/javascript" th:src="@{/js/index.js}"></script>
 <script type="text/html" id="book-card-tpl" th:inline="none">
-    {{# layui.each(d,function(index,item){   }}
+    {{# layui.each(d.data,function(index,item){   }}
     <div class="book-card">
-        <a href="/index/books/details/{{item.bookId}}"><img src="/images/book_images/{{item.image}}"
-                                                            alt="{{item.bookName}}"/></a>
+        <a href="/index/books/details/{{item.bookId}}">
+            {{# if(item.image){ }}
+            <img src="/images/book_images/{{item.image}}" alt="{{item.bookName}}"/>
+            {{# } else { }}
+            <div class="no-image-placeholder">
+                <div class="no-image-text">暂无图片</div>
+            </div>
+            {{# } }}
+        </a>
         <p class="name">
             <a href="/index/books/details/{{item.bookId}}" title="{{item.description}}">{{item.bookName}}</a>
         </p>
         <p class="author" th:inline="none" title="{{ item.authorsDisplay || item.author }}">
             {{ item.authorsDisplay || item.author }}
         </p>
+        {{# if(item.series && item.series.seriesName){ }}
+        <p class="series">
+            <span class="layui-badge-rim">{{item.series.seriesName}}</span>
+        </p>
+        {{# } }}
         <p class="price">
+            {{# if(d.userDiscountRate){ }}
+            <span class="original-price">¥{{item.price}}</span>
+            <span class="discount-text">{{d.userDiscountText}}</span>
+            <span class="discounted-price">¥{{d.calculateDiscountedPrice(item.price)}}</span>
+            {{# } else { }}
             <span class="layui-icon layui-icon-rmb">&nbsp;{{item.price}}</span>
+            {{# } }}
         </p>
     </div>
     {{#    });    }}

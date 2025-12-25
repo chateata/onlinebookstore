@@ -49,7 +49,9 @@
                     {{ item.book_info.authorsDisplay || item.book_info.author }}
                     &nbsp;/&nbsp;{{item.book_info.pubDate}}&nbsp;/&nbsp;{{ item.book_info.publisher ? item.book_info.publisher.name : item.book_info.press }}
                 </p>
-                <p>¥&nbsp;{{item.price}}&nbsp;&nbsp;<del><em>¥&nbsp;{{item.book_info.price}}</em></del>
+                <p>
+                    <span class="discounted-price">¥{{item.price}}</span>
+                    <span class="original-price">¥{{item.book_info.price}}</span>
                 </p>
             </div>
             <div class="order-item-total">

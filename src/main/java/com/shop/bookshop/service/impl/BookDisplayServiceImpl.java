@@ -52,4 +52,26 @@ public class BookDisplayServiceImpl implements BookDisplayService {
         List<Book> books = bookDisplayMapper.fuzzyQueryByBookName(bookName);
         return books;
     }
+
+    @Override
+    public List<Book> searchBooks(Integer page, Integer limit, String keyword, String searchType) {
+        PageHelper.startPage(page, limit);
+        List<Book> books;
+        switch (searchType) {
+            case "isbn":
+                books = bookDisplayMapper.searchByIsbn(keyword);
+                break;
+            case "bookName":
+                books = bookDisplayMapper.searchByBookName(keyword);
+                break;
+            case "press":
+                books = bookDisplayMapper.searchByPress(keyword);
+                break;
+            case "all":
+            default:
+                books = bookDisplayMapper.fuzzyQueryByBookName(keyword);
+                break;
+        }
+        return books;
+    }
 }

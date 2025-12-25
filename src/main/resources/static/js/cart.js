@@ -6,8 +6,41 @@ layui.use(['element', 'jquery', 'layer', 'laytpl', 'laypage', 'form'], function 
         form = layui.form,
         element = layui.element;
 
+    // 存储用户信息
+    var currentUser = null;
 
-    getShoppingCart();
+    // 获取当前用户信息
+    function getCurrentUser(callback) {
+        $.getJSON('/user/credit', function(res) {
+            if (res.code == 0) {
+                currentUser = res.data;
+            }
+            if (callback) callback();
+        });
+    }
+
+    // 计算折后价格
+    function calculateDiscountedPrice(originalPrice) {
+        if (!currentUser || !currentUser.creditLevel || !currentUser.creditLevel.discountRate) {
+            return originalPrice; // 没有用户信息或折扣率时返回原价
+        }
+        var discountRate = parseFloat(currentUser.creditLevel.discountRate);
+        return (originalPrice * (1 - discountRate)).toFixed(2);
+    }
+
+    // 获取折扣率文本
+    function getDiscountText() {
+        if (!currentUser || !currentUser.creditLevel) {
+            return '';
+        }
+        var discountRate = parseFloat(currentUser.creditLevel.discountRate);
+        return (discountRate * 100) + '%折扣';
+    }
+
+    // 获取用户信息后获取购物车
+    getCurrentUser(function() {
+        getShoppingCart();
+    });
 
     /**
      * 异步获取用户购物车信息
@@ -57,7 +90,14 @@ layui.use(['element', 'jquery', 'layer', 'laytpl', 'laypage', 'form'], function 
             console.debug("cart template before render:", tplHtml.slice(0,200));
             console.debug("cart data sample:", (res.data && res.data.length>0) ? res.data[0] : res.data);
             try {
-                laytpl(tplHtml).render(res.data, function (html) {
+                // 准备渲染数据，包含用户信息
+                var renderData = {
+                    data: res.data,
+                    userDiscountRate: currentUser && currentUser.creditLevel ? currentUser.creditLevel.discountRate : null,
+                    userDiscountText: getDiscountText(),
+                    calculateDiscountedPrice: calculateDiscountedPrice
+                };
+                laytpl(tplHtml).render(renderData, function (html) {
                     console.debug("cart rendered html preview:", html.slice(0,200));
                     $("#shopping-carts").html(html);
                 });
