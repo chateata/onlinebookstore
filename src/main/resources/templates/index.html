@@ -71,18 +71,13 @@
 <script type="text/javascript" th:src="@{/js/index.js}"></script>
 <script type="text/html" id="book-card-tpl" th:inline="none">
     {{# layui.each(d.data,function(index,item){   }}
-    <div class="book-card {{# if(item.stock <= 0){ }}out-of-stock{{# } }}">
+    <div class="book-card">
         <a href="/index/books/details/{{item.bookId}}">
             {{# if(item.image){ }}
-            <img src="/images/book_images/{{item.image}}" alt="{{item.bookName}}" {{# if(item.stock <= 0){ }}class="out-of-stock-image"{{# } }}/>
+            <img src="/images/book_images/{{item.image}}" alt="{{item.bookName}}"/>
             {{# } else { }}
             <div class="no-image-placeholder">
                 <div class="no-image-text">暂无图片</div>
-            </div>
-            {{# } }}
-            {{# if(item.stock <= 0){ }}
-            <div class="out-of-stock-overlay">
-                <span class="out-of-stock-text">缺货</span>
             </div>
             {{# } }}
         </a>

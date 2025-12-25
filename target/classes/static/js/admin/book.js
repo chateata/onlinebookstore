@@ -204,9 +204,9 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
                                 $("#seriesSelect").html(seriesOptions);
                             }
 
-                            //填充表单（编辑状态）
-                            form.val("book-form", data);
-                            form.render();
+						//填充表单（编辑状态）
+						form.val("book-form", data);
+						form.render();
 
                             // 丛书选择事件绑定（在form.render()之后）
                             form.on('select(seriesId)', function(seriesData){
