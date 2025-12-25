@@ -23,6 +23,22 @@
                     </div>
                 </div>
                 <div class="layui-form-item">
+                    <label class="layui-form-label">丛书</label>
+                    <div class="layui-input-block">
+                        <select name="seriesId" id="seriesSelect" lay-filter="seriesId">
+                            <option value="">请选择丛书</option>
+                            <option value="none">不属于任何丛书</option>
+                            <option value="new">新建丛书系列</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" id="newBookSeriesInput" style="display: none;">
+                    <label class="layui-form-label">新丛书名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="newSeriesName" placeholder="请输入新的丛书系列名称" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
                     <label class="layui-form-label">书名</label>
                     <div class="layui-input-block">
                         <input type="text" id="bookName" name="bookName" required lay-verify="required"
@@ -139,10 +155,67 @@
             form.render();
         });
 
+        // 加载丛书数据
+        $.getJSON("/series/list", function (res) {
+            if (res.code != 0) {
+                return;
+            }
+            $.each(res.data, function (index, item) {
+                $("#seriesSelect").append('<option value="' + item.seriesId + '">' + item.seriesName +
+                    '</option> ');
+            });
+            form.render();
+
+            // 丛书选择事件（在form.render()之后绑定）
+            form.on('select(seriesId)', function(data){
+                console.log('Add book - Series selection changed to:', data.value); // 调试日志
+                if(data.value === 'new') {
+                    console.log('Showing new book series input'); // 调试日志
+                    $('#newBookSeriesInput').css('display', 'block');
+                } else {
+                    console.log('Hiding new book series input'); // 调试日志
+                    $('#newBookSeriesInput').css('display', 'none');
+                    $('input[name="newSeriesName"]').val('');
+                }
+            });
+        });
+
         //提交
         form.on('submit(addBookBtn)', function (data) {
-            var data = form.val('addBook');
-            $.post('/book/insert',data, function (res) {
+            var formData = form.val('addBook');
+
+            // 处理丛书选择
+            if(formData.seriesId === 'none') {
+                formData.seriesId = null;
+            } else if(formData.seriesId === 'new') {
+                // 创建新丛书
+                var newSeriesName = $('input[name="newSeriesName"]').val();
+                if(!newSeriesName || newSeriesName.trim() === '') {
+                    return layer.msg('请输入新丛书系列名称', {icon: 2});
+                }
+
+                // 先创建丛书
+                $.ajax({
+                    url: '/series/insert',
+                    type: 'post',
+                    data: JSON.stringify({seriesName: newSeriesName.trim()}),
+                    contentType: 'application/json',
+                    async: false, // 同步执行，确保丛书创建完成后再继续
+                    success: function(seriesRes){
+                        if(seriesRes.code != 0) {
+                            layer.msg('创建丛书失败：' + seriesRes.msg,{icon:2});
+                            return false;
+                        }
+                        formData.seriesId = seriesRes.data; // 使用新创建的丛书ID
+                    },
+                    error: function(){
+                        layer.msg('创建丛书失败',{icon:2});
+                        return false;
+                    }
+                });
+            }
+
+            $.post('/book/insert', formData, function (res) {
                 if (res.code != 0) {
                     return layer.msg(res.msg, {icon: 2});
                 }

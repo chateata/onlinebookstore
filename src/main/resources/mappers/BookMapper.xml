@@ -57,6 +57,9 @@
       <if test="press != null">
         press,
       </if>
+      <if test="seriesId != null">
+        series_id,
+      </if>
       <if test="pubDate != null">
         pub_date,
       </if>
@@ -91,6 +94,9 @@
       </if>
       <if test="press != null">
         #{press,jdbcType=VARCHAR},
+      </if>
+      <if test="seriesId != null">
+        #{seriesId,jdbcType=INTEGER},
       </if>
       <if test="pubDate != null">
         #{pubDate,jdbcType=DATE},
@@ -145,6 +151,7 @@
       <if test="stock != null">
         stock = #{stock,jdbcType=INTEGER},
       </if>
+      series_id = #{seriesId,jdbcType=INTEGER},
     </set>
     where book_id = #{bookId,jdbcType=INTEGER}
   </update>

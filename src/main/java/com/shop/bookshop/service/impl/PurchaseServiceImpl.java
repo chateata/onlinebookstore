@@ -10,6 +10,7 @@ import com.shop.bookshop.pojo.PurchaseOrderItem;
 import com.shop.bookshop.pojo.Shortage;
 import com.shop.bookshop.pojo.Book;
 import com.shop.bookshop.pojo.SupplierBook;
+import com.shop.bookshop.pojo.Publisher;
 import com.shop.bookshop.service.PurchaseService;
 import com.shop.bookshop.exception.CustomizeException;
 import com.shop.bookshop.util.ResultCode;
@@ -34,6 +35,8 @@ public class PurchaseServiceImpl implements PurchaseService {
     private ShortageMapper shortageMapper;
     @Resource
     private SupplierBookMapper supplierBookMapper;
+    @Resource
+    private com.shop.bookshop.dao.PublisherMapper publisherMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -61,9 +64,9 @@ public class PurchaseServiceImpl implements PurchaseService {
                     }
                 } else if (item.getBookId() != null) {
                     // 普通书籍的价格逻辑
-                    Book book = bookMapper.selectByBookId(item.getBookId());
-                    if (book != null && book.getPrice() != null) {
-                        item.setUnitPrice(book.getPrice());
+                Book book = bookMapper.selectByBookId(item.getBookId());
+                if (book != null && book.getPrice() != null) {
+                    item.setUnitPrice(book.getPrice());
                     } else {
                         item.setUnitPrice(BigDecimal.ZERO);
                     }
@@ -117,12 +120,12 @@ public class PurchaseServiceImpl implements PurchaseService {
         purchaseOrderItemMapper.updateByPoItemId(poi);
         // 增加库存（仅对普通书籍增加库存，供应商书目不增加库存）
         if (poi.getBookId() != null) {
-            Book book = bookMapper.selectByBookId(poi.getBookId());
-            if (book == null) {
-                throw new CustomizeException(ResultCode.FAILED, "书籍不存在");
-            }
-            book.setStock((book.getStock() == null ? 0 : book.getStock()) + toAdd);
-            bookMapper.updateByBookId(book);
+        Book book = bookMapper.selectByBookId(poi.getBookId());
+        if (book == null) {
+            throw new CustomizeException(ResultCode.FAILED, "书籍不存在");
+        }
+        book.setStock((book.getStock() == null ? 0 : book.getStock()) + toAdd);
+        bookMapper.updateByBookId(book);
         }
         // 处理供应商书目：自动将其添加到系统书籍库中（如果不存在）
         if (poi.getSupplierBookId() != null) {
@@ -147,9 +150,29 @@ public class PurchaseServiceImpl implements PurchaseService {
                     newBook.setPrice(supplierBook.getPrice());
                     newBook.setStock(toAdd); // 设置收货数量为初始库存
                     newBook.setDescription(supplierBook.getDescription());
-                    newBook.setCategoryCode(null); // 暂时设置为null，后续可以根据内容智能分类
+                    newBook.setCategoryCode("default"); // 设置为默认分类
+                    newBook.setSeriesId(supplierBook.getSeriesId()); // 设置丛书ID
                     newBook.setPubDate(new Date()); // 设置出版日期为当前日期（供应商书目的默认值）
                     newBook.setCreateTime(new Date());
+
+                    // 处理出版社信息
+                    if (supplierBook.getPress() != null && !supplierBook.getPress().trim().isEmpty()) {
+                        try {
+                            // 查找是否已存在相同名称的出版社
+                            Publisher existingPublisher = publisherMapper.selectByName(supplierBook.getPress());
+                            if (existingPublisher == null) {
+                                // 创建新出版社
+                                Publisher newPublisher = new Publisher();
+                                newPublisher.setName(supplierBook.getPress());
+                                publisherMapper.insert(newPublisher);
+                                newBook.setPublisherId(newPublisher.getPublisherId());
+                            } else {
+                                newBook.setPublisherId(existingPublisher.getPublisherId());
+                            }
+                        } catch (Exception e) {
+                            // 如果出版社处理失败，暂时跳过设置publisher_id
+                        }
+                    }
 
                     bookMapper.insert(newBook);
 

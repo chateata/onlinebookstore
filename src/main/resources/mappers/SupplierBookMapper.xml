@@ -4,6 +4,7 @@
   <resultMap id="BaseResultMap" type="com.shop.bookshop.pojo.SupplierBook">
     <id column="supplier_book_id" property="supplierBookId" />
     <result column="supplier_id" property="supplierId" />
+    <result column="series_id" property="seriesId" />
     <result column="isbn" property="isbn" />
     <result column="title" property="title" />
     <result column="author" property="author" />
@@ -18,10 +19,11 @@
 
   <resultMap id="WithSupplierResultMap" type="com.shop.bookshop.pojo.SupplierBook" extends="BaseResultMap">
     <association property="supplier" column="supplier_id" select="com.shop.bookshop.dao.SupplierMapper.selectBySupplierId" />
+    <association property="series" column="series_id" select="com.shop.bookshop.dao.SeriesMapper.selectBySeriesId" />
   </resultMap>
 
   <sql id="Base_Column_List">
-    supplier_book_id, supplier_id, isbn, title, author, press, price, supply_price, description, status, create_time, update_time
+    supplier_book_id, supplier_id, series_id, isbn, title, author, press, price, supply_price, description, status, create_time, update_time
   </sql>
 
   <delete id="deleteBySupplierBookId" parameterType="java.lang.Integer">
@@ -29,8 +31,8 @@
   </delete>
 
   <insert id="insert" parameterType="com.shop.bookshop.pojo.SupplierBook" useGeneratedKeys="true" keyProperty="supplierBookId">
-    insert into supplier_book (supplier_id, isbn, title, author, press, price, supply_price, description, status, create_time, update_time)
-    values (#{supplierId}, #{isbn}, #{title}, #{author}, #{press}, #{price}, #{supplyPrice}, #{description}, #{status}, #{createTime}, #{updateTime})
+    insert into supplier_book (supplier_id, series_id, isbn, title, author, press, price, supply_price, description, status, create_time, update_time)
+    values (#{supplierId}, #{seriesId}, #{isbn}, #{title}, #{author}, #{press}, #{price}, #{supplyPrice}, #{description}, #{status}, #{createTime}, #{updateTime})
   </insert>
 
   <select id="selectBySupplierBookId" parameterType="java.lang.Integer" resultMap="WithSupplierResultMap">
@@ -70,3 +72,4 @@
     select <include refid="Base_Column_List" /> from supplier_book where title like concat('%', #{title}, '%') order by create_time desc
   </select>
 </mapper>
+

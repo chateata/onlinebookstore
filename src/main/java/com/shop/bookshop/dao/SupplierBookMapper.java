@@ -13,3 +13,4 @@ public interface SupplierBookMapper {
     List<SupplierBook> selectByIsbn(String isbn);
     List<SupplierBook> selectByTitle(String title);
 }
+

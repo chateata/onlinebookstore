@@ -10,6 +10,9 @@
   <select id="selectBySeriesId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select <include refid="Base_Column_List" /> from series where series_id = #{seriesId}
   </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List" /> from series order by series_name
+  </select>
   <insert id="insert" parameterType="com.shop.bookshop.pojo.Series" useGeneratedKeys="true" keyProperty="seriesId">
     insert into series (series_name, description) values (#{seriesName}, #{description})
   </insert>

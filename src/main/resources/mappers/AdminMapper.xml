@@ -10,9 +10,21 @@
     select admin_name, password from admin where admin_name = #{adminName}
   </select>
 
+  <select id="selectAll" resultMap="BaseResultMap">
+    select admin_name, password from admin order by admin_name
+  </select>
+
   <insert id="insert" parameterType="com.shop.bookshop.pojo.Admin">
     insert into admin (admin_name, password) values (#{adminName}, #{password})
   </insert>
+
+  <update id="updateByAdminName" parameterType="com.shop.bookshop.pojo.Admin">
+    update admin set password = #{password} where admin_name = #{adminName}
+  </update>
+
+  <delete id="deleteByAdminName" parameterType="java.lang.String">
+    delete from admin where admin_name = #{adminName}
+  </delete>
 </mapper>
 
 

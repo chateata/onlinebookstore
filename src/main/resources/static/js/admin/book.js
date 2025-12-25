@@ -28,6 +28,13 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 					return '<span class="layui-badge-rim">' + res.category.categoryName + '</span>';
 				}
 			}, {
+				field: 'seriesName',
+				title: '丛书',
+				width: 120,
+				templet: function(res) {
+					return res.series ? res.series.seriesName : '不属于任何丛书';
+				}
+			}, {
 				field: 'description',
 				title: '简介',
 				width: 120
@@ -119,11 +126,43 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 				area: ['500px'],
 				btn: ['更新'],
 				yes: function(index1) {
-					let new_data=form.val("book-form");
+					let formData = form.val("book-form");
+
+					// 处理丛书选择
+					if(formData.seriesId === 'none') {
+						formData.seriesId = null;
+					} else if(formData.seriesId === 'new') {
+						// 创建新丛书
+						var newSeriesName = $('input[name="newSeriesName"]').val();
+						if(!newSeriesName || newSeriesName.trim() === '') {
+							return layer.msg('请输入新丛书系列名称',{icon:2});
+						}
+
+						// 先创建丛书
+						$.ajax({
+							url: '/series/insert',
+							type: 'post',
+							data: JSON.stringify({seriesName: newSeriesName.trim()}),
+							contentType: 'application/json',
+							async: false, // 同步执行，确保丛书创建完成后再继续
+							success: function(seriesRes){
+								if(seriesRes.code != 0) {
+									layer.msg('创建丛书失败：' + seriesRes.msg,{icon:2});
+									return false;
+								}
+								formData.seriesId = seriesRes.data; // 使用新创建的丛书ID
+							},
+							error: function(){
+								layer.msg('创建丛书失败',{icon:2});
+								return false;
+							}
+						});
+					}
+
 					$.ajax({
 						url: '/book/update',
 						type: 'post',
-						data: new_data,
+						data: formData,
 						dataType: 'json',
 						success: function(res) {
 							if (res.code != 0) {
@@ -135,7 +174,7 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 								icon: 1,
 								time: 1300
 							}, function() {
-								obj.update(new_data);
+								book_tb.reload(); // 重新加载表格数据
 								layer.close(index1);
 							});
 						}
@@ -152,9 +191,36 @@ layui.use(['table', 'form', 'jquery', 'layer', 'upload','element'], function() {
 							$("#categoryCode").append('<option value="' + item.categoryCode + '">' + item.categoryName +
 								'</option> ');
 						});
-						//填充表单（编辑状态）
-						form.val("book-form", data);
-						form.render();
+
+                        // 加载丛书数据
+                        $.getJSON("/series/list", function(seriesRes) {
+                            if (seriesRes.code == 0) {
+                                var seriesOptions = '<option value="">请选择丛书</option>';
+                                seriesOptions += '<option value="none">不属于任何丛书</option>';
+                                seriesOptions += '<option value="new">新建丛书系列</option>';
+                                $.each(seriesRes.data || [], function(index, item) {
+                                    seriesOptions += '<option value="' + item.seriesId + '">' + item.seriesName + '</option>';
+                                });
+                                $("#seriesSelect").html(seriesOptions);
+                            }
+
+                            //填充表单（编辑状态）
+                            form.val("book-form", data);
+                            form.render();
+
+                            // 丛书选择事件绑定（在form.render()之后）
+                            form.on('select(seriesId)', function(seriesData){
+                                console.log('Edit book - Series selection changed to:', seriesData.value); // 调试日志
+                                if(seriesData.value === 'new') {
+                                    console.log('Showing new edit series input'); // 调试日志
+                                    $('#newEditSeriesInput').css('display', 'block');
+                                } else {
+                                    console.log('Hiding new edit series input'); // 调试日志
+                                    $('#newEditSeriesInput').css('display', 'none');
+                                    $('input[name="newSeriesName"]').val('');
+                                }
+                            });
+                        });
 					});
 				}
 			});

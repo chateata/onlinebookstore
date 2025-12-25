@@ -167,7 +167,7 @@ layui.use(['table', 'form', 'jquery', 'layer', 'laytpl'], function() {
                             $row.append($('<td>').append($del));
                             $content.find('#po-items-table tbody').append($row);
 
-                                // when book changes, fill price
+                            // when book changes, fill price
                             $bookSel.on('change', function(){
                                 var selectedOption = $(this).find('option:selected');
                                 var price = selectedOption.data('price') || 0;

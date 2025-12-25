@@ -56,6 +56,12 @@ public class AdminRouterController {
         return "admin/inventory";
     }
 
+    //管理员管理页面
+    @GetMapping("/admin_manage")
+    public String toAdminManage(){
+        return "admin/admin";
+    }
+
     //后台登录页面
     @GetMapping("/login")
     public String toAdminLogin(){

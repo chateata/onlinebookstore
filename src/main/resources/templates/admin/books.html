@@ -77,6 +77,22 @@
 					</select>
 				</div>
 			</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">丛书</label>
+			<div class="layui-input-block">
+				<select name="seriesId" id="seriesSelect" lay-filter="seriesId">
+					<option value="">请选择丛书</option>
+					<option value="none">不属于任何丛书</option>
+					<option value="new">新建丛书系列</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" id="newEditSeriesInput" style="display: none;">
+			<label class="layui-form-label">新丛书名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="newSeriesName" placeholder="请输入新的丛书系列名称" class="layui-input">
+			</div>
+		</div>
 			<div class="layui-form-item">
 				<label class="layui-form-label">书名</label>
 				<div class="layui-input-block">

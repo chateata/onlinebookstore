@@ -6,6 +6,7 @@ import java.util.Date;
 public class SupplierBook {
     private Integer supplierBookId;
     private Integer supplierId;
+    private Integer seriesId;
     private String isbn;
     private String title;
     private String author;
@@ -19,6 +20,7 @@ public class SupplierBook {
 
     // 关联对象
     private Supplier supplier;
+    private com.shop.bookshop.pojo.Series series;
 
     public Integer getSupplierBookId() {
         return supplierBookId;
@@ -34,6 +36,14 @@ public class SupplierBook {
 
     public void setSupplierId(Integer supplierId) {
         this.supplierId = supplierId;
+    }
+
+    public Integer getSeriesId() {
+        return seriesId;
+    }
+
+    public void setSeriesId(Integer seriesId) {
+        this.seriesId = seriesId;
     }
 
     public String getIsbn() {
@@ -123,4 +133,13 @@ public class SupplierBook {
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
     }
+
+    public com.shop.bookshop.pojo.Series getSeries() {
+        return series;
+    }
+
+    public void setSeries(com.shop.bookshop.pojo.Series series) {
+        this.series = series;
+    }
 }
+

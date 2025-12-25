@@ -73,12 +73,48 @@ layui.use(['table', 'form', 'jquery', 'layer'], function() {
             success: function(layero, index){
                 var $content = layero.find('.layui-layer-content');
 
+                // 丛书选择事件处理函数
+                function handleSeriesChange() {
+                    var selectedValue = $content.find('#supplierBookSeriesSelect').val();
+                    console.log('Series selection changed to:', selectedValue); // 调试日志
+                    if(selectedValue === 'new') {
+                        console.log('Showing new series input'); // 调试日志
+                        $content.find('#newSeriesInput').css('display', 'block');
+                    } else {
+                        console.log('Hiding new series input'); // 调试日志
+                        $content.find('#newSeriesInput').css('display', 'none');
+                        $content.find('input[name="newSeriesName"]').val('');
+                    }
+                }
+
+                // 使用事件委托绑定change事件
+                $content.on('change', '#supplierBookSeriesSelect', function(){
+                    handleSeriesChange();
+                });
+
+                // 加载丛书数据
+                var seriesData = [];
+                $.getJSON('/series/list', function(seriesRes){
+                    if(seriesRes.code == 0) {
+                        seriesData = seriesRes.data || [];
+                        var seriesOptions = '<option value="">请选择丛书</option>';
+                        seriesOptions += '<option value="none">不属于任何丛书</option>';
+                        seriesOptions += '<option value="new">新建丛书系列</option>';
+                        layui.each(seriesData, function(i, s){
+                            seriesOptions += '<option value="' + s.seriesId + '">' + s.seriesName + '</option>';
+                        });
+                        $content.find('#supplierBookSeriesSelect').html(seriesOptions);
+                        form.render('select');
+                    }
+                });
+
                 // 初始化供应商书目表格
                 var supplierBooksTb = table.render({
                     elem: $content.find('#supplier_books_tb'),
                     url: '/supplier/book/list?supplierId=' + supplierId,
                     cols: [[
                         {field:'supplierBookId', title:'ID', width:80, sort:true},
+                        {field:'seriesName', title:'丛书', width:120, templet: function(d){ return d.series ? d.series.seriesName : ''; }},
                         {field:'isbn', title:'ISBN', width:120},
                         {field:'title', title:'书名', width:200},
                         {field:'author', title:'作者', width:120},
@@ -145,24 +181,55 @@ layui.use(['table', 'form', 'jquery', 'layer'], function() {
             content: $("#supplier_book_form_tmpl").html(),
             area: ['600px', '500px'],
             btn: [isEdit ? '更新' : '添加'],
-            yes: function(bookIndex){
-                var formData = form.val("supplier-book-form");
-                formData.supplierId = supplierId;
+                yes: function(bookIndex){
+                    var formData = form.val("supplier-book-form");
+                    formData.supplierId = supplierId;
 
-                $.ajax({
-                    url: isEdit ? '/supplier/book/update' : '/supplier/book/insert',
-                    type: isEdit ? 'put' : 'post',
-                    data: JSON.stringify(formData),
-                    contentType: 'application/json',
-                    success: function(res){
-                        if(res.code!=0) return layer.msg(res.msg,{icon:2});
-                        layer.msg(isEdit ? '更新成功' : '添加成功',{icon:1}, function(){
-                            supplierBooksTb.reload();
-                            layer.close(bookIndex);
+                    // 处理丛书选择
+                    if(formData.seriesId === 'none') {
+                        formData.seriesId = null;
+                    } else if(formData.seriesId === 'new') {
+                        // 创建新丛书
+                        var newSeriesName = $content.find('input[name="newSeriesName"]').val();
+                        if(!newSeriesName || newSeriesName.trim() === '') {
+                            return layer.msg('请输入新丛书系列名称',{icon:2});
+                        }
+
+                        // 先创建丛书
+                        $.ajax({
+                            url: '/series/insert',
+                            type: 'post',
+                            data: JSON.stringify({seriesName: newSeriesName.trim()}),
+                            contentType: 'application/json',
+                            async: false, // 同步执行，确保丛书创建完成后再继续
+                            success: function(seriesRes){
+                                if(seriesRes.code != 0) {
+                                    layer.msg('创建丛书失败：' + seriesRes.msg,{icon:2});
+                                    return false;
+                                }
+                                formData.seriesId = seriesRes.data; // 使用新创建的丛书ID
+                            },
+                            error: function(){
+                                layer.msg('创建丛书失败',{icon:2});
+                                return false;
+                            }
                         });
                     }
-                });
-            },
+
+                    $.ajax({
+                        url: isEdit ? '/supplier/book/update' : '/supplier/book/insert',
+                        type: isEdit ? 'put' : 'post',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json',
+                        success: function(res){
+                            if(res.code!=0) return layer.msg(res.msg,{icon:2});
+                            layer.msg(isEdit ? '更新成功' : '添加成功',{icon:1}, function(){
+                                supplierBooksTb.reload();
+                                layer.close(bookIndex);
+                            });
+                        }
+                    });
+                },
             success: function(){
                 form.render(null, 'supplier-book-form');
                 if(isEdit){

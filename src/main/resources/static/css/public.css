@@ -374,7 +374,6 @@ html,body {
 /* Order items container */
 #order-items { max-width:1000px; margin: 24px auto; padding: 18px; background:var(--surface); border-radius:12px; box-shadow:var(--card-shadow); }
 
-/* Responsive adjustments for cart rows */
 @media (max-width: 820px) {
     .cart-container { padding: 12px; }
     .cart-container .cart {
@@ -392,4 +391,14 @@ html,body {
     .cart-container .cart img { width: 140px; height: auto; display:block; margin: 0 auto 8px; }
     .cart-delete { text-align: left; margin-top:8px; display:flex; gap:8px; }
     .cart-info { padding: 0 8px; }
+}
+
+.layui-input[readonly] {
+    background-color: #f5f5f5; 
+    cursor: not-allowed; 
+}
+
+.layui-input[readonly]::placeholder {
+    color: #999;
+    font-style: italic;
 }

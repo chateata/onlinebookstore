@@ -2,14 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head(title,style)">
     <meta charset="utf-8">
-    <title th:replace="${title}">网上书店系统后台管理</title>
+    <title th:replace="${title}">网上书店后台管理</title>
     <link rel="stylesheet" type="text/css" th:href="@{/lib/layui/css/layui.css}"/>
     <script th:src="@{/lib/layui/layui.js}" type="text/javascript" charset="utf-8"></script>
     <style th:replace="${style}"></style>
 </head>
 <body>
 <div class="layui-header" th:fragment="header">
-    <div class="layui-logo">网上书店系统后台管理</div>
+    <div class="layui-logo">网上书店后台管理</div>
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item"><a th:href="@{/}">回到首页</a></li>
         <li class="layui-nav-item">
@@ -47,6 +47,8 @@
             </li>
             <li class="layui-nav-item" th:classappend="${pageName=='user'?'layui-this':''}"><a
                     th:href="@{/admin/user_manage}">用户管理</a></li>
+            <li class="layui-nav-item" th:classappend="${pageName=='admin'?'layui-this':''}"><a
+                    th:href="@{/admin/admin_manage}">管理员管理</a></li>
             <li class="layui-nav-item" th:classappend="${pageName=='addBook'?'layui-this':''}"><a
                     th:href="@{/admin/add_book}">上架书籍</a></li>
         </ul>
