@@ -10,6 +10,8 @@
     <result column="account_balance" jdbcType="DECIMAL" property="accountBalance" />
     <result column="credit_level_id" jdbcType="INTEGER" property="creditLevelId" />
     <result column="join_time" jdbcType="TIMESTAMP" property="joinTime" />
+    <association property="creditLevel" column="credit_level_id" javaType="com.shop.bookshop.pojo.CreditLevel"
+                 select="com.shop.bookshop.dao.CreditLevelMapper.selectByLevelId"/>
   </resultMap>
   <sql id="Base_Column_List">
     user_id, user_name, password, email, avatar, account_balance, credit_level_id, join_time
