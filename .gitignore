@@ -26,6 +26,5 @@ Desktop.ini
 *.temp
 hs_err_pid*.log
 
-# 本地/敏感配置（若存在，勿提交密码；按需取消注释）
-# application-local.yml
-# application-secret.properties
+# 含数据库账号密码的 demo 配置：仅提交 application-demo.yml.example，勿提交本文件
+src/main/resources/application-demo.yml

@@ -1,29 +1,28 @@
+# 使用方式：复制本文件为同目录下的 application-demo.yml（该文件已被 .gitignore 忽略，勿提交），
+# 再填写 spring.datasource.username 与 password。仓库内不保存真实账号密码。
+
 server:
   port: 8080
 
-#配置数据库和数据源
+# 配置数据库和数据源
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/bookshop?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: "051120"
+    username: "" # 必填：你的 MySQL 用户名
+    password: "" # 必填：你的 MySQL 密码
     type: com.alibaba.druid.pool.DruidDataSource
-    
-    
-    
 
-
-  #关闭thymeleaf的缓存
+  # 关闭 thymeleaf 的缓存
   thymeleaf:
     cache: false
     mode: HTML
-  #热部署
+  # 热部署
   devtools:
     restart:
       enabled: true
 
-#sql日志打印配置
+# sql 日志打印配置
 logging:
   level:
     com:

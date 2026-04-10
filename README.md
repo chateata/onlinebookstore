@@ -1,6 +1,4 @@
-### 项目类型
-
----
+### 项目概述
 
 这是一个完整的在线书店管理系统，严格按照功能需求实现了6大核心功能模块：供书目录及库存管理、采购管理、客户管理、顾客订单管理和发货管理、供应商管理、网上浏览查询。
 
@@ -55,7 +53,8 @@
   - `ResultCode`：定义统一的状态码与消息，配合 `ResultVO`（项目中存在）构成 API 响应约定。
 
 - src/main/resources
-  - `application.yml` / `application-demo.yml`：应用配置（profile、session、MyBatis mapper 路径等）。（默认 profile 为 `demo`）
+  - `application.yml`：公共配置（默认激活 profile `demo`）。
+  - `application-demo.yml.example`：demo 环境配置模板（**无真实密码**）；首次使用请复制为 `application-demo.yml` 并自行填写数据库用户名与密码（`application-demo.yml` 已被 Git 忽略，勿提交）。
   - `mappers/`：MyBatis 的 SQL 映射文件（`AdminMapper.xml`, `AuthorMapper.xml`, `BookDisplayMapper.xml`, `BookMapper.xml`, `CategoryMapper.xml`, `CreditLevelMapper.xml`, `KeywordMapper.xml`, `OrderItemMapper.xml`, `OrderMapper.xml`, `PublisherMapper.xml`, `PurchaseOrderItemMapper.xml`, `PurchaseOrderMapper.xml`, `SeriesMapper.xml`, `ShoppingCartMapper.xml`, `ShortageMapper.xml`, `SupplierBookMapper.xml`, `SupplierMapper.xml`, `UserMapper.xml` 等）。Mapper XML 与 `dao` 包内的接口方法同名或按 namespace 对应。
   - `templates/`：Thymeleaf 页面（`index.html`, `details.html`, `login.html`, `register.html`, `shopping_cart.html`, `user_center.html`, `user_orders.html` 等）；`admin/` 目录包含后台管理页面（`admin.html`, `books.html`, `category.html`, `inventory.html`, `login.html`, `order.html`, `purchase.html`, `supplier.html`, `user.html`, `add_book.html`）；`_fragment.html`、`_adminfragment.html` 放公共片段（页头/页尾/样式）。
   - `static/`：前端静态资源（`css/`, `js/`, `images/book_images/`, `lib/layui/` 等）。浏览器请求 `/static/...` 下的资源（Spring Boot 自动映射），模板中通过相对路径或 `@{/css/...}` 引用。
@@ -86,33 +85,51 @@
 - `GlobalExceptionHandler` 统一捕获异常并返回标准 `ResultVO` 或错误页面。
 
 #### 修改点与定位
-- 修改数据库配置：编辑 `application-demo.yml` 或创建 `application.yml` 的对应 profile，调整 `spring.datasource`（示例 README 已说明）。
+- 修改数据库配置：复制 `application-demo.yml.example` 为 `application-demo.yml`，编辑其中 `spring.datasource`（勿将含密码的 `application-demo.yml` 提交到 Git）。
 - 新增 SQL：在 `dao` 添加接口方法并在 `resources/mappers` 新增/修改对应 XML。
 - 新增页面：在 `templates/` 添加 HTML（可使用 `_fragment` 片段），并在 `controller` 对应方法中返回视图名；静态资源放 `static/`。
 - API 返回格式：修改 `util/ResultVO` 与 `util/ResultCode` 来统一前端接口规范。
 
 
+---
+
 
 ### 运行与初始化
 
----
+1. 前置依赖（需自行配置）：
 
-- 创建数据库：数据库名为 `bookshop`
-- 在 `application-demo.yml` 中修改数据库用户名/密码（默认用户名：root，密码：051120）
+- JDK 8
+- Apache Maven（需要本机已安装 Maven，并把 mvn 加到 PATH，才能执行 mvn clean package）
+- MySQL 8.0（应用通过 JDBC 连库）
+
+
+2. 运行和初始化
+
+- 在你的电脑中自行导入数据库：数据库名为 `bookshop`
+- **配置数据库账号（勿提交密码）**：将 `src/main/resources/application-demo.yml.example` 复制为同目录下的 `application-demo.yml`，打开后者并填写 `spring.datasource.username` 与 `spring.datasource.password`（示例文件里这两项为空字符串，仅作占位）。`application-demo.yml` 已列入 `.gitignore`，请勿把真实密码推送到远程仓库。
 - 导入数据库脚本：`bookshop.sql`（包含完整的表结构、初始数据和业务逻辑）
-- 运行 `BookshopApplication` 启动应用
+- 运行 `BookshopApplication` 启动应用（默认已使用 `demo` profile）
+- 前台用户账号（预设）：账号 `teamo` 密码 `123456`
 - 后台管理员账号（预设）：账号 `admin` 密码 `123456`
-- 默认运行端口：8080（可在 `application.yml` 中修改）
+- 默认运行端口：8080（可在 `application-demo.yml` 中修改 `server.port`）
+
+**PowerShell 复制示例：**
+
+```powershell
+Copy-Item src\main\resources\application-demo.yml.example src\main\resources\application-demo.yml
+# 再用编辑器打开 application-demo.yml 填写数据库用户名与密码
+```
 
 ```
-# 打包后运行
+# 打包后运行（需已按上文生成并填写 application-demo.yml 且重新打包）
 mvn clean package -DskipTests
 java -jar target\bookshop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 ```
 
+---
+
 ### 访问地址与说明
 
----
 
 - **默认主机与端口**：`http://localhost:8080/`（`server.port` 未配置时为 8080，`src/main/resources/application.yml` 中默认 profile 为 `demo`）
 - **首页**：`http://localhost:8080/` 或 `http://localhost:8080/index`
