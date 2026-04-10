@@ -1,0 +1,31 @@
+# Maven 构建输出（编译产物、打包 jar、测试报告等，不应提交）
+target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.factorypath
+.vscode/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 日志与临时文件
+*.log
+*.tmp
+*.temp
+hs_err_pid*.log
+
+# 本地/敏感配置（若存在，勿提交密码；按需取消注释）
+# application-local.yml
+# application-secret.properties
