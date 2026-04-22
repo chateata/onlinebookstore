@@ -1,253 +1,272 @@
 package com.shop.bookshop.pojo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import org.springframework.format.annotation.DateTimeFormat;
 
 public class Book {
-    private Integer bookId;
+  private Integer bookId;
 
-    @NotBlank(message = "分类不能为空")
-    private String categoryCode;
+  @NotBlank(message = "分类不能为空")
+  private String categoryCode;
 
-    @NotBlank(message = "分类不能为空")
-    private String bookName;
+  @NotBlank(message = "分类不能为空")
+  private String bookName;
 
-    @NotBlank(message = "ISBN不能为空")
-    private String isbn;
+  @NotBlank(message = "ISBN不能为空")
+  private String isbn;
 
-    @NotBlank(message = "作者不能为空")
-    private String author;
+  @NotBlank(message = "作者不能为空")
+  private String author;
 
-    @NotBlank(message = "出版社不能为空")
-    private String press;
+  @NotBlank(message = "出版社不能为空")
+  private String press;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    @Past(message = "出版日期只能在当前时间之前")
-    private Date pubDate;
+  @DateTimeFormat(pattern = "yyyy-MM-dd")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  @Past(message = "出版日期只能在当前时间之前")
+  private Date pubDate;
 
-    private String image;
+  private String image;
 
-    private String description;
+  private String description;
 
-    @NotNull(message = "价格不能为空")
-    private BigDecimal price;
+  @NotNull(message = "价格不能为空")
+  private BigDecimal price;
 
-    @NotNull(message = "库存不能为空")
-    private Integer stock;
+  @NotNull(message = "库存不能为空")
+  private Integer stock;
 
-    private Integer publisherId;
-    private Integer seriesId;
-    private Integer minStock;
-    private String coverPath;
-    private Publisher publisher;
-    private List<Author> authors;
-    private List<Keyword> keywords;
-    private Series series;
-    private String authorsDisplay;
+  private Integer publisherId;
+  private Integer seriesId;
+  private Integer minStock;
+  private String coverPath;
+  private Publisher publisher;
+  private List<Author> authors;
+  private List<Keyword> keywords;
+  private Series series;
+  private String authorsDisplay;
 
-    private Date createTime;
-    private Category category;
+  private Date createTime;
+  private Category category;
 
-    public Category getCategory() {
-        return category;
-    }
+  public Category getCategory() {
+    return category;
+  }
 
-    public void setCategory(Category category) {
-        this.category = category;
-    }
+  public void setCategory(Category category) {
+    this.category = category;
+  }
 
-    public Integer getBookId() {
-        return bookId;
-    }
+  public Integer getBookId() {
+    return bookId;
+  }
 
-    public void setBookId(Integer bookId) {
-        this.bookId = bookId;
-    }
-    
-    public Integer getPublisherId() {
-        return publisherId;
-    }
+  public void setBookId(Integer bookId) {
+    this.bookId = bookId;
+  }
 
-    public void setPublisherId(Integer publisherId) {
-        this.publisherId = publisherId;
-    }
+  public Integer getPublisherId() {
+    return publisherId;
+  }
 
-    public Integer getSeriesId() {
-        return seriesId;
-    }
+  public void setPublisherId(Integer publisherId) {
+    this.publisherId = publisherId;
+  }
 
-    public void setSeriesId(Integer seriesId) {
-        this.seriesId = seriesId;
-    }
+  public Integer getSeriesId() {
+    return seriesId;
+  }
 
-    public Integer getMinStock() {
-        return minStock;
-    }
+  public void setSeriesId(Integer seriesId) {
+    this.seriesId = seriesId;
+  }
 
-    public void setMinStock(Integer minStock) {
-        this.minStock = minStock;
-    }
+  public Integer getMinStock() {
+    return minStock;
+  }
 
-    public String getCoverPath() {
-        return coverPath;
-    }
+  public void setMinStock(Integer minStock) {
+    this.minStock = minStock;
+  }
 
-    public void setCoverPath(String coverPath) {
-        this.coverPath = coverPath;
-    }
+  public String getCoverPath() {
+    return coverPath;
+  }
 
-    public Publisher getPublisher() {
-        return publisher;
-    }
+  public void setCoverPath(String coverPath) {
+    this.coverPath = coverPath;
+  }
 
-    public void setPublisher(Publisher publisher) {
-        this.publisher = publisher;
-    }
+  public Publisher getPublisher() {
+    return publisher;
+  }
 
-    public List<Author> getAuthors() {
-        return authors;
-    }
+  public void setPublisher(Publisher publisher) {
+    this.publisher = publisher;
+  }
 
-    public void setAuthors(List<Author> authors) {
-        this.authors = authors;
-    }
+  public List<Author> getAuthors() {
+    return authors;
+  }
 
-    public List<Keyword> getKeywords() {
-        return keywords;
-    }
+  public void setAuthors(List<Author> authors) {
+    this.authors = authors;
+  }
 
-    public void setKeywords(List<Keyword> keywords) {
-        this.keywords = keywords;
-    }
+  public List<Keyword> getKeywords() {
+    return keywords;
+  }
 
-    public Series getSeries() {
-        return series;
-    }
+  public void setKeywords(List<Keyword> keywords) {
+    this.keywords = keywords;
+  }
 
-    public void setSeries(Series series) {
-        this.series = series;
-    }
+  public Series getSeries() {
+    return series;
+  }
 
-    public String getAuthorsDisplay() {
-        return authorsDisplay;
-    }
+  public void setSeries(Series series) {
+    this.series = series;
+  }
 
-    public void setAuthorsDisplay(String authorsDisplay) {
-        this.authorsDisplay = authorsDisplay;
-    }
+  public String getAuthorsDisplay() {
+    return authorsDisplay;
+  }
 
-    public String getCategoryCode() {
-        return categoryCode;
-    }
+  public void setAuthorsDisplay(String authorsDisplay) {
+    this.authorsDisplay = authorsDisplay;
+  }
 
-    public void setCategoryCode(String categoryCode) {
-        this.categoryCode = categoryCode == null ? null : categoryCode.trim();
-    }
+  public String getCategoryCode() {
+    return categoryCode;
+  }
 
-    public String getBookName() {
-        return bookName;
-    }
+  public void setCategoryCode(String categoryCode) {
+    this.categoryCode = categoryCode == null ? null : categoryCode.trim();
+  }
 
-    public void setBookName(String bookName) {
-        this.bookName = bookName == null ? null : bookName.trim();
-    }
+  public String getBookName() {
+    return bookName;
+  }
 
-    public String getIsbn() {
-        return isbn;
-    }
+  public void setBookName(String bookName) {
+    this.bookName = bookName == null ? null : bookName.trim();
+  }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn == null ? null : isbn.trim();
-    }
+  public String getIsbn() {
+    return isbn;
+  }
 
-    public String getAuthor() {
-        return author;
-    }
+  public void setIsbn(String isbn) {
+    this.isbn = isbn == null ? null : isbn.trim();
+  }
 
-    public void setAuthor(String author) {
-        this.author = author == null ? null : author.trim();
-    }
+  public String getAuthor() {
+    return author;
+  }
 
-    public String getPress() {
-        return press;
-    }
+  public void setAuthor(String author) {
+    this.author = author == null ? null : author.trim();
+  }
 
-    public void setPress(String press) {
-        this.press = press == null ? null : press.trim();
-    }
+  public String getPress() {
+    return press;
+  }
 
-    public Date getPubDate() {
-        return pubDate;
-    }
+  public void setPress(String press) {
+    this.press = press == null ? null : press.trim();
+  }
 
-    public void setPubDate(Date pubDate) {
-        this.pubDate = pubDate;
-    }
+  public Date getPubDate() {
+    return pubDate;
+  }
 
-    public String getImage() {
-        return image;
-    }
+  public void setPubDate(Date pubDate) {
+    this.pubDate = pubDate;
+  }
 
-    public void setImage(String image) {
-        this.image = image == null ? null : image.trim();
-    }
+  public String getImage() {
+    return image;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public void setImage(String image) {
+    this.image = image == null ? null : image.trim();
+  }
 
-    public void setDescription(String description) {
-        this.description = description == null ? null : description.trim();
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
+  public void setDescription(String description) {
+    this.description = description == null ? null : description.trim();
+  }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+  public BigDecimal getPrice() {
+    return price;
+  }
 
-    public Integer getStock() {
-        return stock;
-    }
+  public void setPrice(BigDecimal price) {
+    this.price = price;
+  }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
+  public Integer getStock() {
+    return stock;
+  }
 
-    public Date getCreateTime() {
-        return createTime;
-    }
+  public void setStock(Integer stock) {
+    this.stock = stock;
+  }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+  public Date getCreateTime() {
+    return createTime;
+  }
 
-    @Override
-    public String toString() {
-        return "Book{" +
-                "bookId=" + bookId +
-                ", categoryCode='" + categoryCode + '\'' +
-                ", bookName='" + bookName + '\'' +
-                ", isbn='" + isbn + '\'' +
-                ", author='" + author + '\'' +
-                ", press='" + press + '\'' +
-                ", pubDate=" + pubDate +
-                ", image='" + image + '\'' +
-                ", description='" + description + '\'' +
-                ", price=" + price +
-                ", stock=" + stock +
-                ", createTime=" + createTime +
-                ", category=" + category +
-                '}';
-    }
+  public void setCreateTime(Date createTime) {
+    this.createTime = createTime;
+  }
+
+  @Override
+  public String toString() {
+    return "Book{"
+        + "bookId="
+        + bookId
+        + ", categoryCode='"
+        + categoryCode
+        + '\''
+        + ", bookName='"
+        + bookName
+        + '\''
+        + ", isbn='"
+        + isbn
+        + '\''
+        + ", author='"
+        + author
+        + '\''
+        + ", press='"
+        + press
+        + '\''
+        + ", pubDate="
+        + pubDate
+        + ", image='"
+        + image
+        + '\''
+        + ", description='"
+        + description
+        + '\''
+        + ", price="
+        + price
+        + ", stock="
+        + stock
+        + ", createTime="
+        + createTime
+        + ", category="
+        + category
+        + '}';
+  }
 }

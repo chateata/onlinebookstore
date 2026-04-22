@@ -3,24 +3,25 @@ package com.shop.bookshop.pojo;
 import javax.validation.constraints.NotBlank;
 
 public class Admin {
-    @NotBlank(message = "管理员账号不能为空")
-    private String adminName;
-    @NotBlank(message = "密码不能为空")
-    private String password;
+  @NotBlank(message = "管理员账号不能为空")
+  private String adminName;
 
-    public String getAdminName() {
-        return adminName;
-    }
+  @NotBlank(message = "密码不能为空")
+  private String password;
 
-    public void setAdminName(String adminName) {
-        this.adminName = adminName;
-    }
+  public String getAdminName() {
+    return adminName;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public void setAdminName(String adminName) {
+    this.adminName = adminName;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }

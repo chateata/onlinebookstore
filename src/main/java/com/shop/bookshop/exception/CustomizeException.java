@@ -1,43 +1,44 @@
 package com.shop.bookshop.exception;
 
-
 import com.shop.bookshop.util.ResultCode;
 
-public class CustomizeException extends RuntimeException{
-    private int code;
-    private String msg;
+public class CustomizeException extends RuntimeException {
+  private int code;
+  private String msg;
 
-    public CustomizeException(int code, String msg) {
-        super(msg);
-        this.code=code;
-        this.msg=msg;
-    }
-    public CustomizeException(ResultCode resultCode) {
-        this(resultCode.getCode(), resultCode.getMsg());
-    }
+  public CustomizeException(int code, String msg) {
+    super(msg);
+    this.code = code;
+    this.msg = msg;
+  }
 
-    /**
-     * 自定义消息
-     * @param resultCode
-     * @param msg  自定义消息
-     */
-    public CustomizeException(ResultCode resultCode, String msg) {
-        this(resultCode.getCode(), msg);
-    }
+  public CustomizeException(ResultCode resultCode) {
+    this(resultCode.getCode(), resultCode.getMsg());
+  }
 
-    public int getCode() {
-        return code;
-    }
+  /**
+   * 自定义消息
+   *
+   * @param resultCode
+   * @param msg 自定义消息
+   */
+  public CustomizeException(ResultCode resultCode, String msg) {
+    this(resultCode.getCode(), msg);
+  }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
+  public int getCode() {
+    return code;
+  }
 
-    public String getMsg() {
-        return msg;
-    }
+  public void setCode(int code) {
+    this.code = code;
+  }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
+  public String getMsg() {
+    return msg;
+  }
+
+  public void setMsg(String msg) {
+    this.msg = msg;
+  }
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!--
+      Progressive tightening: add low-noise rules and trim suppressions.xml as the tree stays green.
+      Build does not fail on violations (failOnViolation=false in pom); this is signal-only until you opt in.
+    -->
+
+    <property name="charset" value="UTF-8"/>
+
+    <!-- Scope: only Java sources -->
+    <property name="fileExtensions" value="java"/>
+
+    <module name="SuppressionFilter">
+        <property name="file" value="config/checkstyle/suppressions.xml"/>
+    </module>
+
+    <!-- File-level whitespace hygiene -->
+    <module name="FileTabCharacter"/>
+    <module name="NewlineAtEndOfFile"/>
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^package.*|^import.*|.*https?://.*"/>
+    </module>
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Line has trailing whitespace."/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- Public top-level type name should match the file name. -->
+        <module name="OuterTypeFilename"/>
+        <!-- Imports -->
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+        <!-- Style / literals -->
+        <module name="ModifierOrder"/>
+        <module name="UpperEll"/>
+        <module name="ArrayTypeStyle"/>
+        <!-- Simple bug / smell checks (usually low volume) -->
+        <module name="EmptyStatement"/>
+        <module name="NoFinalizer"/>
+        <module name="StringLiteralEquality"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="DefaultComesLast"/>
+
+        <!-- Basic whitespace consistency (low controversy) -->
+        <module name="WhitespaceAround"/>
+        <module name="WhitespaceAfter"/>
+        <!-- Omit VARIABLE_DEF: Google Java Format groups fields; blank lines before each field are too noisy. -->
+        <module name="EmptyLineSeparator">
+            <property
+                    name="tokens"
+                    value="PACKAGE_DEF,IMPORT,STATIC_IMPORT,CLASS_DEF,INTERFACE_DEF,ENUM_DEF,STATIC_INIT,INSTANCE_INIT,CTOR_DEF,METHOD_DEF"/>
+        </module>
+
+        <!-- Keep braces style consistent; avoid heavy refactors -->
+        <module name="LeftCurly"/>
+        <module name="RightCurly"/>
+    </module>
+</module>
+

@@ -6,84 +6,90 @@ import com.shop.bookshop.pojo.User;
 import com.shop.bookshop.service.LoginRegisterService;
 import com.shop.bookshop.util.ResultCode;
 import com.shop.bookshop.util.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class LoginRegisterController {
 
-    @Autowired
-    private LoginRegisterService loginRegisterService;
+  @Autowired private LoginRegisterService loginRegisterService;
 
-    /**
-     * 用户登录请求处理
-     * @param user
-     * @return
-     */
-    @PostMapping("/user/login")
-    @ResponseBody
-    public ResultVO userLoginHandler(@RequestBody @Valid User user, HttpSession session) {
-        loginRegisterService.userLogin(user,session);
-        return new ResultVO(ResultCode.SUCCESS,"/");
-    }
+  /**
+   * 用户登录请求处理
+   *
+   * @param user
+   * @return
+   */
+  @PostMapping("/user/login")
+  @ResponseBody
+  public ResultVO userLoginHandler(@RequestBody @Valid User user, HttpSession session) {
+    loginRegisterService.userLogin(user, session);
+    return new ResultVO(ResultCode.SUCCESS, "/");
+  }
 
-    /**
-     * 用户注册请求处理
-     * @param user
-     * @return
-     */
-    @PostMapping("/user/register")
-    @ResponseBody
-    public ResultVO userRegisterHandler(@RequestBody @Valid User user) {
-        loginRegisterService.userRegister(user);
-        return new ResultVO(ResultCode.SUCCESS,"/login");
-    }
+  /**
+   * 用户注册请求处理
+   *
+   * @param user
+   * @return
+   */
+  @PostMapping("/user/register")
+  @ResponseBody
+  public ResultVO userRegisterHandler(@RequestBody @Valid User user) {
+    loginRegisterService.userRegister(user);
+    return new ResultVO(ResultCode.SUCCESS, "/login");
+  }
 
-    /**
-     * 管理员登录请求处理
-     * @param admin
-     * @return
-     */
-    @PostMapping("/admin/login")
-    @ResponseBody
-    public ResultVO adminLoginHandler(@RequestBody Admin admin, HttpSession session) {
-        // delegate to service which now checks DB-backed admin
-        loginRegisterService.adminLogin(admin, session);
-        return new ResultVO(ResultCode.SUCCESS,"/admin/book_manage");
-    }
+  /**
+   * 管理员登录请求处理
+   *
+   * @param admin
+   * @return
+   */
+  @PostMapping("/admin/login")
+  @ResponseBody
+  public ResultVO adminLoginHandler(@RequestBody Admin admin, HttpSession session) {
+    // delegate to service which now checks DB-backed admin
+    loginRegisterService.adminLogin(admin, session);
+    return new ResultVO(ResultCode.SUCCESS, "/admin/book_manage");
+  }
 
-    /**
-     * 用户退出
-     * @param session
-     * @return
-     */
-    @GetMapping("/logout")
-    public String userLogout(HttpSession session){
-        session.removeAttribute("user");
-        return "redirect:/login";
-    }
+  /**
+   * 用户退出
+   *
+   * @param session
+   * @return
+   */
+  @GetMapping("/logout")
+  public String userLogout(HttpSession session) {
+    session.removeAttribute("user");
+    return "redirect:/login";
+  }
 
-    /**
-     * 后台管理退出
-     * @param session
-     * @return
-     */
-    @GetMapping("/admin/logout")
-    public String adminLogout(HttpSession session){
-        session.removeAttribute("admin");
-        return "redirect:/";
-    }
+  /**
+   * 后台管理退出
+   *
+   * @param session
+   * @return
+   */
+  @GetMapping("/admin/logout")
+  public String adminLogout(HttpSession session) {
+    session.removeAttribute("admin");
+    return "redirect:/";
+  }
 
-    @GetMapping("/checkLoggedIn")
-    @ResponseBody
-    public ResultVO checkUserIsLoggedIn(HttpSession session) {
-        if (session.getAttribute("user") == null) {
-            throw new CustomizeException(ResultCode.USER_NOT_LOGGED_IN);
-        }
-        return new ResultVO(ResultCode.SUCCESS);
+  @GetMapping("/checkLoggedIn")
+  @ResponseBody
+  public ResultVO checkUserIsLoggedIn(HttpSession session) {
+    if (session.getAttribute("user") == null) {
+      throw new CustomizeException(ResultCode.USER_NOT_LOGGED_IN);
     }
+    return new ResultVO(ResultCode.SUCCESS);
+  }
 }

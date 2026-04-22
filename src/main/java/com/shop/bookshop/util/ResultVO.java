@@ -1,80 +1,85 @@
 package com.shop.bookshop.util;
 
 public class ResultVO<T> {
-    private int code;    //消息码
-    private String msg;  //响应消息
-    private int count;   //数据总数，一般只用在分页的数据响应
-    private T data;      //要响应的数据
+  private int code; // 消息码
+  private String msg; // 响应消息
+  private int count; // 数据总数，一般只用在分页的数据响应
+  private T data; // 要响应的数据
 
-    public ResultVO(int code, String msg, T data){
-        this.code=code;
-        this.msg=msg;
-        this.data=data;
-    }
-    public ResultVO(int code,String msg,int count,T data){
-        this(code,msg,data);
-        this.count=count;
-    }
-    public ResultVO(ResultCode resultCode, T data){
-        this(resultCode.getCode(),resultCode.getMsg(),data);
-    }
-    public ResultVO(ResultCode resultCode,int count ,T data){
-        this(resultCode.getCode(),resultCode.getMsg(),count,data);
-    }
-    public ResultVO(ResultCode resultCode){
-        this(resultCode.getCode(),resultCode.getMsg(),null);
-    }
-    public ResultVO(ResultCode resultCode,String msg,T data){
-        this(resultCode.getCode(),msg,data);
-    }
+  public ResultVO(int code, String msg, T data) {
+    this.code = code;
+    this.msg = msg;
+    this.data = data;
+  }
 
-    public static <T> ResultVO<T> success(T data){
-        return new ResultVO<>(ResultCode.SUCCESS, data);
-    }
+  public ResultVO(int code, String msg, int count, T data) {
+    this(code, msg, data);
+    this.count = count;
+  }
 
-    public static <T> ResultVO<T> success(String msg, T data){
-        ResultVO<T> vo = new ResultVO<>(ResultCode.SUCCESS, data);
-        vo.setMsg(msg);
-        return vo;
-    }
+  public ResultVO(ResultCode resultCode, T data) {
+    this(resultCode.getCode(), resultCode.getMsg(), data);
+  }
 
-    public static <T> ResultVO<T> error(ResultCode code){
-        return new ResultVO<>(code);
-    }
+  public ResultVO(ResultCode resultCode, int count, T data) {
+    this(resultCode.getCode(), resultCode.getMsg(), count, data);
+  }
 
-    public static <T> ResultVO<T> error(ResultCode code, String msg){
-        return new ResultVO<>(code, msg, null);
-    }
+  public ResultVO(ResultCode resultCode) {
+    this(resultCode.getCode(), resultCode.getMsg(), null);
+  }
 
-    public int getCode() {
-        return code;
-    }
+  public ResultVO(ResultCode resultCode, String msg, T data) {
+    this(resultCode.getCode(), msg, data);
+  }
 
-    public void setCode(int code) {
-        this.code = code;
-    }
+  public static <T> ResultVO<T> success(T data) {
+    return new ResultVO<>(ResultCode.SUCCESS, data);
+  }
 
-    public String getMsg() {
-        return msg;
-    }
+  public static <T> ResultVO<T> success(String msg, T data) {
+    ResultVO<T> vo = new ResultVO<>(ResultCode.SUCCESS, data);
+    vo.setMsg(msg);
+    return vo;
+  }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
+  public static <T> ResultVO<T> error(ResultCode code) {
+    return new ResultVO<>(code);
+  }
 
-    public int getCount() {
-        return count;
-    }
+  public static <T> ResultVO<T> error(ResultCode code, String msg) {
+    return new ResultVO<>(code, msg, null);
+  }
 
-    public void setCount(int count) {
-        this.count = count;
-    }
+  public int getCode() {
+    return code;
+  }
 
-    public T getData() {
-        return data;
-    }
+  public void setCode(int code) {
+    this.code = code;
+  }
 
-    public void setData(T data) {
-        this.data = data;
-    }
+  public String getMsg() {
+    return msg;
+  }
+
+  public void setMsg(String msg) {
+    this.msg = msg;
+  }
+
+  public int getCount() {
+    return count;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
+  }
+
+  public T getData() {
+    return data;
+  }
+
+  public void setData(T data) {
+    this.data = data;
+  }
 }

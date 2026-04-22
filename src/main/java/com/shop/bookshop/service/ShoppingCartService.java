@@ -1,19 +1,17 @@
 package com.shop.bookshop.service;
 
 import com.shop.bookshop.pojo.ShoppingCart;
-
 import java.util.List;
-
 
 public interface ShoppingCartService {
 
-    int addToShoppingCart(ShoppingCart cart);
+  int addToShoppingCart(ShoppingCart cart);
 
-    int deleteShoppingCarts(int[] cartIds);
+  int deleteShoppingCarts(int[] cartIds);
 
-    int deleteShoppingCartByCartId(Integer cartId);
+  int deleteShoppingCartByCartId(Integer cartId);
 
-    int updateShoppingCart(ShoppingCart cart);
+  int updateShoppingCart(ShoppingCart cart);
 
-    List<ShoppingCart> getShoppingCartsByUserId(Integer userId);
+  List<ShoppingCart> getShoppingCartsByUserId(Integer userId);
 }

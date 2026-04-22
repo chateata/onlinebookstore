@@ -6,58 +6,55 @@ import com.shop.bookshop.pojo.User;
 import com.shop.bookshop.service.OrderHandleService;
 import com.shop.bookshop.util.ResultCode;
 import com.shop.bookshop.util.ResultVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import javax.annotation.Resource;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpSession;
 import java.util.List;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/user_center")
 public class UserCenterController {
 
-    @Autowired
-    private OrderHandleService orderHandleService;
-    @Resource
-    private com.shop.bookshop.dao.UserMapper userMapper;
-    @Resource
-    private com.shop.bookshop.dao.CreditLevelMapper creditLevelMapper;
+  @Autowired private OrderHandleService orderHandleService;
+  @Resource private com.shop.bookshop.dao.UserMapper userMapper;
+  @Resource private com.shop.bookshop.dao.CreditLevelMapper creditLevelMapper;
 
+  /**
+   * 根据用户ID,获取用户订单
+   *
+   * @return
+   */
+  @GetMapping("/orders")
+  @ResponseBody
+  public ResultVO getUserOrders(Integer page, Integer limit, HttpSession session) {
+    User user = (User) session.getAttribute("user");
+    List<Order> orders = orderHandleService.getOrdersByUserId(user.getUserId(), page, limit);
+    PageInfo pageInfo = new PageInfo(orders);
+    return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), orders);
+  }
 
+  /**
+   * 删除指定orderId的订单
+   *
+   * @param orderId
+   * @return
+   */
+  @DeleteMapping("/orders/{orderId}")
+  @ResponseBody
+  public ResultVO deleteOrder(@PathVariable("orderId") Integer orderId) {
+    int orders = orderHandleService.deleteOrderById(orderId);
+    return new ResultVO(ResultCode.SUCCESS, null);
+  }
 
-    /**
-     * 根据用户ID,获取用户订单
-     * @return
-     */
-    @GetMapping("/orders")
-    @ResponseBody
-    public ResultVO getUserOrders(Integer page,Integer limit,HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        List<Order> orders = orderHandleService.getOrdersByUserId(user.getUserId(), page, limit);
-        PageInfo pageInfo = new PageInfo(orders);
-        return new ResultVO(ResultCode.SUCCESS, (int)pageInfo.getTotal(),orders);
-    }
-
-    /**
-     * 删除指定orderId的订单
-     * @param orderId
-     * @return
-     */
-    @DeleteMapping("/orders/{orderId}")
-    @ResponseBody
-    public ResultVO deleteOrder(@PathVariable("orderId") Integer orderId) {
-        int orders = orderHandleService.deleteOrderById(orderId);
-        return new ResultVO(ResultCode.SUCCESS,null);
-    }
-
-    /**
-     * 用户中心页面
-     */
-    @GetMapping("")
-    public String userCenter() {
-        return "user_center";
-    }
-
+  /** 用户中心页面 */
+  @GetMapping("")
+  public String userCenter() {
+    return "user_center";
+  }
 }

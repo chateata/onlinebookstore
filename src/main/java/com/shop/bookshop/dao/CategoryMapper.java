@@ -1,17 +1,16 @@
 package com.shop.bookshop.dao;
 
 import com.shop.bookshop.pojo.Category;
-
 import java.util.List;
 
 public interface CategoryMapper {
-    int deleteByByCategoryCode(String categoryCode);
+  int deleteByByCategoryCode(String categoryCode);
 
-    int insert(Category record);
+  int insert(Category record);
 
-    Category selectByByCategoryCode(String categoryCode);
+  Category selectByByCategoryCode(String categoryCode);
 
-    int updateByCategoryCode(Category record);
+  int updateByCategoryCode(Category record);
 
-    List<Category> selectAll();
+  List<Category> selectAll();
 }

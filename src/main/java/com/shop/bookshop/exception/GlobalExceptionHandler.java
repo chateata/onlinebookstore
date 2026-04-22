@@ -14,46 +14,49 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    /**
-     * 自定义异常处理
-     * @param e
-     * @return
-     */
-    @ExceptionHandler(CustomizeException.class)
-    public ResultVO customizeExceptionHandler(CustomizeException e){
-        log.error(e.getMessage());
-        return new ResultVO(e.getCode(),e.getMsg(),null);
-    }
+  private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * 参数校验异常处理和数据绑定异常处理
-     * @param e
-     * @return
-     */
-    @ExceptionHandler(value = {MethodArgumentNotValidException.class, BindException.class})
-    public ResultVO methodArgumentNotValidExceptionHandler(Exception e) {
-        BindingResult bindingResult;
-        if(e instanceof MethodArgumentNotValidException){
-            MethodArgumentNotValidException ex= (MethodArgumentNotValidException)e;
-            bindingResult = ex.getBindingResult();
-        }else {
-            BindException ex=(BindException)e;
-            bindingResult = ex.getBindingResult();
-        }
-        ObjectError error = bindingResult.getAllErrors().get(0);
-        return new ResultVO(ResultCode.ARGUMENT_NOT_VALID,error.getDefaultMessage(),null);
-    }
+  /**
+   * 自定义异常处理
+   *
+   * @param e
+   * @return
+   */
+  @ExceptionHandler(CustomizeException.class)
+  public ResultVO customizeExceptionHandler(CustomizeException e) {
+    log.error(e.getMessage());
+    return new ResultVO(e.getCode(), e.getMsg(), null);
+  }
 
-
-    /**
-     * 其他异常处理
-     * @param e
-     * @return
-     */
-    @ExceptionHandler(Exception.class)
-    public ResultVO ExceptionHandler(Exception e){
-        log.error(e.getMessage());
-        return new ResultVO(ResultCode.UNKNOWN_ERROR,e.getMessage());
+  /**
+   * 参数校验异常处理和数据绑定异常处理
+   *
+   * @param e
+   * @return
+   */
+  @ExceptionHandler(value = {MethodArgumentNotValidException.class, BindException.class})
+  public ResultVO methodArgumentNotValidExceptionHandler(Exception e) {
+    BindingResult bindingResult;
+    if (e instanceof MethodArgumentNotValidException) {
+      MethodArgumentNotValidException ex = (MethodArgumentNotValidException) e;
+      bindingResult = ex.getBindingResult();
+    } else {
+      BindException ex = (BindException) e;
+      bindingResult = ex.getBindingResult();
     }
+    ObjectError error = bindingResult.getAllErrors().get(0);
+    return new ResultVO(ResultCode.ARGUMENT_NOT_VALID, error.getDefaultMessage(), null);
+  }
+
+  /**
+   * 其他异常处理
+   *
+   * @param e
+   * @return
+   */
+  @ExceptionHandler(Exception.class)
+  public ResultVO ExceptionHandler(Exception e) {
+    log.error(e.getMessage());
+    return new ResultVO(ResultCode.UNKNOWN_ERROR, e.getMessage());
+  }
 }

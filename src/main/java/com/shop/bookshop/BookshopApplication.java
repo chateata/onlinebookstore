@@ -8,9 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @MapperScan("com.shop.bookshop.dao")
 public class BookshopApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(BookshopApplication.class, args);
-		
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(BookshopApplication.class, args);
+  }
 }

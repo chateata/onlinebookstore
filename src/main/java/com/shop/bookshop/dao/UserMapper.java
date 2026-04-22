@@ -1,21 +1,20 @@
 package com.shop.bookshop.dao;
 
 import com.shop.bookshop.pojo.User;
-
 import java.util.List;
 
 public interface UserMapper {
-    int deleteByUserId(Integer userId);
+  int deleteByUserId(Integer userId);
 
-    int insert(User record);
+  int insert(User record);
 
-    User selectByUserId(Integer userId);
+  User selectByUserId(Integer userId);
 
-    int updateByUserId(User record);
+  int updateByUserId(User record);
 
-    List<User> selectAll();
+  List<User> selectAll();
 
-    User selectByUserName(String userName);
+  User selectByUserName(String userName);
 
-    List<User> searchUsers(User user);
+  List<User> searchUsers(User user);
 }

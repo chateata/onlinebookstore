@@ -1,30 +1,30 @@
 package com.shop.bookshop.service;
 
+import com.shop.bookshop.pojo.Order;
 import java.util.List;
 
-import com.shop.bookshop.pojo.Order;
-
 public interface OrderService {
-    int deleteByOrderId(Integer orderId);
+  int deleteByOrderId(Integer orderId);
 
-    int insert(Order record);
+  int insert(Order record);
 
-    Order selectByOrderId(Integer orderId);
-    
-    int updateByOrderId(Order record);
+  Order selectByOrderId(Integer orderId);
 
-    List<Order> selectAll();
+  int updateByOrderId(Order record);
 
-    List<Order> selectByUserId(Integer userId);
-    
-   // int orderIsExits(Integer orderId);
+  List<Order> selectAll();
 
-    /**
-     * 多条件搜索订单 
-     * @param order
-     * @param page
-     * @param limit
-     * @return
-     */
-    List<Order> searchOrders(Order order,Integer page,Integer limit);
+  List<Order> selectByUserId(Integer userId);
+
+  // int orderIsExits(Integer orderId);
+
+  /**
+   * 多条件搜索订单
+   *
+   * @param order
+   * @param page
+   * @param limit
+   * @return
+   */
+  List<Order> searchOrders(Order order, Integer page, Integer limit);
 }

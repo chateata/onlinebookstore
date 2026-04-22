@@ -17,6 +17,11 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<skipTests>true</skipTests>
+		<!-- static analysis: versions referenced by plugins in <build> -->
+		<spotbugs-maven-plugin.version>4.8.6.4</spotbugs-maven-plugin.version>
+		<maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+		<!-- Checkstyle 9.3: last line compatible with running Maven on JDK 8 -->
+		<checkstyle.version>9.3</checkstyle.version>
 	</properties>
 
 	<dependencies>
@@ -80,6 +85,63 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>${spotbugs-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>spotbugs-report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>spotbugs</goal>
+						</goals>
+						<configuration>
+							<!-- report only: do not fail the build on bugs -->
+							<failOnError>false</failOnError>
+							<effort>Max</effort>
+							<threshold>Low</threshold>
+							<xmlOutput>true</xmlOutput>
+							<xmlOutputDirectory>${project.build.directory}</xmlOutputDirectory>
+							<xmlOutputFilename>spotbugsXml.xml</xmlOutputFilename>
+							<htmlOutput>true</htmlOutput>
+							<!-- HTML report defaults to ${project.reporting.outputDirectory}; set explicitly for stability -->
+							<outputDirectory>${project.build.directory}/site</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>checkstyle-validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<configLocation>config/checkstyle/checkstyle.xml</configLocation>
+							<encoding>UTF-8</encoding>
+							<consoleOutput>true</consoleOutput>
+							<includeTestSourceDirectory>false</includeTestSourceDirectory>
+							<linkXRef>false</linkXRef>
+							<!-- report only: do not fail the build on violations -->
+							<failOnViolation>false</failOnViolation>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<!-- Run Maven on JDK 8: pin Checkstyle to a Java-8-compatible line -->
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>${checkstyle.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

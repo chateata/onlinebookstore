@@ -96,14 +96,13 @@
 
 ### 运行与初始化
 
-1. 前置依赖（需自行配置）：
+#### 前置依赖（需自行配置）
 
 - JDK 8
-- Apache Maven（需要本机已安装 Maven，并把 mvn 加到 PATH，才能执行 mvn clean package）
+- Apache Maven（需要本机已安装 Maven，并把 `mvn` 加到 PATH）
 - MySQL 8.0（应用通过 JDBC 连库）
 
-
-2. 运行和初始化
+#### 运行和初始化
 
 - 在你的电脑中自行导入数据库：数据库名为 `bookshop`
 - **配置数据库账号（勿提交密码）**：将 `src/main/resources/application-demo.yml.example` 复制为同目录下的 `application-demo.yml`，打开后者并填写 `spring.datasource.username` 与 `spring.datasource.password`（示例文件里这两项为空字符串，仅作占位）。`application-demo.yml` 已列入 `.gitignore`，请勿把真实密码推送到远程仓库。
@@ -159,4 +158,54 @@ java -jar target\bookshop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 - 如要修改端口运行：`java -jar target\bookshop-0.0.1-SNAPSHOT.jar --server.port=8090` 或在 `application.yml` 中设置 `server.port`。
 - 登录约束：用户相关页面（购物车、订单）必须先通过 `/login` 页面登录并在 session 中存在 `user`；后台登录通过 `/admin/login` 页面，管理员账号 `admin` / `123456`。
 - 系统支持完整的业务流程：用户注册→登录→浏览书籍→加入购物车→提交订单→管理员审核→发货，整个流程都有相应的权限控制和数据校验。
+
+---
+
+### 团队开发：静态检查（Checkstyle / SpotBugs）
+
+首次启动项目不强制要求运行静态检查；但在团队协作/提交代码/CI 中建议统一执行。
+
+#### 推荐命令（团队统一）
+
+- **快速检查（只跑 Checkstyle，快）**
+
+```
+mvn validate
+```
+
+- **生成 Checkstyle HTML 报告**（可视化查看）
+
+```
+mvn checkstyle:checkstyle
+```
+
+- **全量检查（Checkstyle + 编译 + SpotBugs 出报告）**
+
+```
+mvn clean verify
+```
+
+- **全量检查并运行单元测试**（如需）
+
+```
+mvn clean verify -DskipTests=false
+```
+
+#### 报告路径（生成后打开）
+
+- **Checkstyle**
+  - **HTML 报告**：`target/site/checkstyle.html`
+  - **控制台输出**：运行 `mvn validate` 时直接打印（当前配置为只报告，不失败）
+
+- **SpotBugs**
+  - **HTML 报告**：`target/site/spotbugs.html`
+  - **XML 报告**：`target/spotbugsXml.xml`
+  - **其他报告文件**：`target/spotbugs.xml`
+
+#### Windows 下打开报告（在项目根目录执行）
+
+```powershell
+start .\target\site\checkstyle.html
+start .\target\site\spotbugs.html
+```
 

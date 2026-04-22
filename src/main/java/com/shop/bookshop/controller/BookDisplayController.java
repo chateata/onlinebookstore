@@ -6,75 +6,82 @@ import com.shop.bookshop.pojo.Category;
 import com.shop.bookshop.service.BookDisplayService;
 import com.shop.bookshop.util.ResultCode;
 import com.shop.bookshop.util.ResultVO;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/index")
 public class BookDisplayController {
 
-    @Autowired
-    private BookDisplayService bookDisplayService;
+  @Autowired private BookDisplayService bookDisplayService;
 
-    /**
-     * 处理前台获取所有分类的请求
-     * @return
-     */
-    @GetMapping("/category")
-    @ResponseBody
-    public ResultVO getCategories() {
-        List<Category> categories = bookDisplayService.getAllCategories();
-        return new ResultVO(ResultCode.SUCCESS,categories);
-    }
+  /**
+   * 处理前台获取所有分类的请求
+   *
+   * @return
+   */
+  @GetMapping("/category")
+  @ResponseBody
+  public ResultVO getCategories() {
+    List<Category> categories = bookDisplayService.getAllCategories();
+    return new ResultVO(ResultCode.SUCCESS, categories);
+  }
 
-    /**
-     * 根据前台传来的categoryCode，响应对应的分类的书籍
-     * 需要进行分页响应
-     * 如果categoryCode为null,则响应所有书籍
-     * @param categoryCode   分类代码
-     * @param page           页码
-     * @param limit          每页的数量
-     * @return
-     */
-    @GetMapping("/books")
-    @ResponseBody
-    public ResultVO getBooksByCategoryCode(@RequestParam(required = false) String categoryCode, @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer limit) {
-        List<Book> books = bookDisplayService.getBooksByCategoryCode(page==null?1:page, limit==null?10:limit, categoryCode);
-        PageInfo pageInfo = new PageInfo(books);  //获得分页信息
-        return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(),books);
-    }
+  /**
+   * 根据前台传来的categoryCode，响应对应的分类的书籍 需要进行分页响应 如果categoryCode为null,则响应所有书籍
+   *
+   * @param categoryCode 分类代码
+   * @param page 页码
+   * @param limit 每页的数量
+   * @return
+   */
+  @GetMapping("/books")
+  @ResponseBody
+  public ResultVO getBooksByCategoryCode(
+      @RequestParam(required = false) String categoryCode,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer limit) {
+    List<Book> books =
+        bookDisplayService.getBooksByCategoryCode(
+            page == null ? 1 : page, limit == null ? 10 : limit, categoryCode);
+    PageInfo pageInfo = new PageInfo(books); // 获得分页信息
+    return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), books);
+  }
 
-    /**
-     * 根据请求的bookId,返回该Id的书籍信息，响应Html视图
-     * @param bookId
-     * @return
-     */
-    @GetMapping("/books/details/{bookId}")
-    public String bookDetailsView(@PathVariable("bookId") Integer bookId, Model model) {
-        Book book = bookDisplayService.getBookDetailsByBookId(bookId);
-        model.addAttribute("book", book);
-        return "details";
-    }
+  /**
+   * 根据请求的bookId,返回该Id的书籍信息，响应Html视图
+   *
+   * @param bookId
+   * @return
+   */
+  @GetMapping("/books/details/{bookId}")
+  public String bookDetailsView(@PathVariable("bookId") Integer bookId, Model model) {
+    Book book = bookDisplayService.getBookDetailsByBookId(bookId);
+    model.addAttribute("book", book);
+    return "details";
+  }
 
-    /**
-     * 首页根据不同条件搜索书籍
-     * @param keyword 搜索关键词
-     * @param searchType 搜索类型：isbn, bookName, press, all
-     * @return
-     */
-    @GetMapping("/books/search")
-    @ResponseBody
-    public ResultVO searchBook(@RequestParam(required = true) String keyword,
-                              @RequestParam(defaultValue = "all") String searchType) {
-        List<Book> books = bookDisplayService.searchBooks(1, 10, keyword, searchType);
-        PageInfo pageInfo = new PageInfo(books);
-        return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), books);
-    }
-
-
-
+  /**
+   * 首页根据不同条件搜索书籍
+   *
+   * @param keyword 搜索关键词
+   * @param searchType 搜索类型：isbn, bookName, press, all
+   * @return
+   */
+  @GetMapping("/books/search")
+  @ResponseBody
+  public ResultVO searchBook(
+      @RequestParam(required = true) String keyword,
+      @RequestParam(defaultValue = "all") String searchType) {
+    List<Book> books = bookDisplayService.searchBooks(1, 10, keyword, searchType);
+    PageInfo pageInfo = new PageInfo(books);
+    return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), books);
+  }
 }
