@@ -5,8 +5,8 @@
 
 <module name="Checker">
     <!--
-      Progressive tightening: add low-noise rules and trim suppressions.xml as the tree stays green.
-      Build does not fail on violations (failOnViolation=false in pom); this is signal-only until you opt in.
+      Progressive tightening: A = format/imports, B = defect-lean rules (NeedBraces, catch, illegal imports, line width).
+      failOnViolation=false: signal only until you opt in to gate.
     -->
 
     <property name="charset" value="UTF-8"/>
@@ -21,8 +21,9 @@
     <!-- File-level whitespace hygiene -->
     <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>
+    <!-- Stage B: stricter than 140; long strings/URLs can still match ignorePattern below -->
     <module name="LineLength">
-        <property name="max" value="140"/>
+        <property name="max" value="120"/>
         <property name="ignorePattern" value="^package.*|^import.*|.*https?://.*"/>
     </module>
     <module name="RegexpSingleline">
@@ -37,6 +38,10 @@
         <module name="AvoidStarImport"/>
         <module name="UnusedImports"/>
         <module name="RedundantImport"/>
+        <!-- Stage B: no sun.* / com.sun.* internal APIs -->
+        <module name="IllegalImport">
+            <property name="illegalPkgs" value="sun,com.sun"/>
+        </module>
         <!-- Style / literals -->
         <module name="ModifierOrder"/>
         <module name="UpperEll"/>
@@ -48,6 +53,10 @@
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="DefaultComesLast"/>
+
+        <!-- Stage B: real defect / maintainability, bounded churn -->
+        <module name="NeedBraces"/>
+        <module name="EmptyCatchBlock"/>
 
         <!-- Basic whitespace consistency (low controversy) -->
         <module name="WhitespaceAround"/>

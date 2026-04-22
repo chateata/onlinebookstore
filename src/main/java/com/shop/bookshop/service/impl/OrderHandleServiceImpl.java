@@ -218,7 +218,9 @@ public class OrderHandleServiceImpl implements OrderHandleService {
           (exist.getQuantity() == null ? 0 : exist.getQuantity())
               - (exist.getShippedQuantity() == null ? 0 : exist.getShippedQuantity());
       int toShip = shipItem.getQuantity() == null ? 0 : shipItem.getQuantity();
-      if (toShip <= 0) continue;
+      if (toShip <= 0) {
+        continue;
+      }
       if (toShip > remain) {
         throw new CustomizeException(
             ResultCode.FAILED, "发货数量超过未发数量，bookId=" + shipItem.getBookId());

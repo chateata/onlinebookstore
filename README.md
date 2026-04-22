@@ -121,7 +121,9 @@ Copy-Item src\main\resources\application-demo.yml.example src\main\resources\app
 
 ```
 # 打包后运行（需已按上文生成并填写 application-demo.yml 且重新打包）
+# 删除上一次构建产物，编译代码并打包，跳过测试的执行
 mvn clean package -DskipTests
+# 直接运行上一步生成的可执行 jar，启动 Spring Boot 应用，并指定启用 demo 这个 Spring Profile
 java -jar target\bookshop-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 ```
 

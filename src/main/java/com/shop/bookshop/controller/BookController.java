@@ -23,8 +23,11 @@ public class BookController {
   public ResultVO bookSearchByBookId(Integer bookId) {
     // Book books=bookMapper.selectByBookId(bookIde);
     Book books = bookService.bookSearchById(bookId);
-    if (books != null) return new ResultVO(ResultCode.SUCCESS, books);
-    else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    if (books != null) {
+      return new ResultVO(ResultCode.SUCCESS, books);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 
   @PostMapping("/delete")
@@ -46,7 +49,9 @@ public class BookController {
     PageInfo pageInfo = new PageInfo(books);
     if (books.size() != 0) {
       return new ResultVO(ResultCode.SUCCESS, (int) pageInfo.getTotal(), books);
-    } else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 
   // 添加验证注解

@@ -24,8 +24,11 @@ public class CategoryController {
   public ResultVO categorySearchByCode(String categoryCode) {
 
     Category categories = categoryService.selectByByCategoryCode(categoryCode);
-    if (categories != null) return new ResultVO(ResultCode.SUCCESS, categories);
-    else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    if (categories != null) {
+      return new ResultVO(ResultCode.SUCCESS, categories);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 
   @PostMapping("/delete")
@@ -54,7 +57,10 @@ public class CategoryController {
   public ResultVO categorySearchAll(Integer page, Integer limit) {
     List<Category> categories =
         categoryService.selectAll(page == null ? 0 : page, limit == null ? 10 : limit);
-    if (categories.size() != 0) return new ResultVO(ResultCode.SUCCESS, categories);
-    else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    if (categories.size() != 0) {
+      return new ResultVO(ResultCode.SUCCESS, categories);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 }

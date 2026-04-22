@@ -30,8 +30,11 @@ public class OrderServiceImpl implements OrderService {
   public Order selectByOrderId(Integer orderId) {
     // TODO Auto-generated method stub
     Order orders = orderMapper.selectByOrderId(orderId);
-    if (orders != null) return orders;
-    else return null;
+    if (orders != null) {
+      return orders;
+    } else {
+      return null;
+    }
   }
 
   @Override

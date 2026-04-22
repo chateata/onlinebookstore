@@ -74,7 +74,9 @@ public class OrderController {
       order.setOrderId(orderId);
       int orders = orderService.updateByOrderId(order);
       return new ResultVO(ResultCode.SUCCESS, null);
-    } else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 
   /**
@@ -103,8 +105,11 @@ public class OrderController {
   @GetMapping("/list/{orderId}")
   public ResultVO getOrderByOrderId(@PathVariable("orderId") Integer orderId) {
     Order orders = orderService.selectByOrderId(orderId);
-    if (orders != null) return new ResultVO(ResultCode.SUCCESS, orders);
-    else return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    if (orders != null) {
+      return new ResultVO(ResultCode.SUCCESS, orders);
+    } else {
+      return new ResultVO(ResultCode.RECORD_NOT_FOUND, null);
+    }
   }
 
   /**

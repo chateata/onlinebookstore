@@ -49,18 +49,23 @@ public class ShoppingCartController {
                     a -> {
                       if (a != null) {
                         if (a.getName() != null && !a.getName().isEmpty()) {
-                          if (sb.length() > 0) sb.append(", ");
+                          if (sb.length() > 0) {
+                            sb.append(", ");
+                          }
                           sb.append(a.getName());
                         }
                       }
                     });
-            if (sb.length() > 0) authorsDisplay = sb.toString();
+            if (sb.length() > 0) {
+              authorsDisplay = sb.toString();
+            }
           }
           if (authorsDisplay == null || authorsDisplay.isEmpty()) {
             authorsDisplay = cart.getBook_info().getAuthor();
           }
           cart.getBook_info().setAuthorsDisplay(authorsDisplay);
         } catch (Exception ignore) {
+          // Enrichment of authors is best-effort; ignore parse/list failures
         }
       }
     }
