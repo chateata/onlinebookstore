@@ -211,3 +211,23 @@ start .\target\site\checkstyle.html
 start .\target\site\spotbugs.html
 ```
 
+---
+
+### 团队测试：单元测试 / 覆盖率
+
+#### 测试分层约定（团队统一）
+
+- **单元测试（Unit Test）**：不依赖真实数据库/网络/文件系统；主要测试 `service`/`util` 的业务逻辑与边界条件。命名以 `*UnitTest.java` 结尾。
+
+#### 推荐命令（团队统一）
+
+- **只跑单元测试**
+
+```
+mvn -DskipTests=false test
+```
+
+#### 覆盖率报告
+
+- **JaCoCo HTML**：`target/site/jacoco/index.html`
+
