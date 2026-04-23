@@ -157,6 +157,40 @@ public class PurchaseServiceImplUnitTest {
   }
 
   @Test
+  void createPurchaseOrder_whenSupplierBookHasNoSupplyPrice_shouldUsePrice() {
+    PurchaseOrder po = new PurchaseOrder();
+    po.setOrderDate(new Date()); // cover non-null orderDate branch
+    po.setStatus("CUSTOM");
+    po.setTotalAmount(new BigDecimal("123.45")); // cover non-null totalAmount branch
+
+    PurchaseOrderItem item = new PurchaseOrderItem();
+    item.setSupplierBookId(9);
+    item.setQuantity(null); // cover qty==null branch
+    item.setUnitPrice(null);
+    item.setReceivedQuantity(1); // cover receivedQuantity != null branch
+    po.setItems(Collections.singletonList(item));
+
+    SupplierBook sb = new SupplierBook();
+    sb.setSupplierBookId(9);
+    sb.setSupplyPrice(null);
+    sb.setPrice(new BigDecimal("5.00"));
+    when(supplierBookMapper.selectBySupplierBookId(9)).thenReturn(sb);
+    when(purchaseOrderMapper.insert(any(PurchaseOrder.class)))
+        .thenAnswer(
+            inv -> {
+              PurchaseOrder inserted = inv.getArgument(0);
+              inserted.setPoId(22);
+              return 1;
+            });
+
+    service.createPurchaseOrder(po);
+
+    assertEquals(new BigDecimal("5.00"), item.getUnitPrice());
+    assertEquals(new BigDecimal("123.45"), po.getTotalAmount());
+    assertEquals("CUSTOM", po.getStatus());
+  }
+
+  @Test
   void createPurchaseOrder_whenUnitPriceNullAndBookIdProvided_shouldUseBookPriceOrZero() {
     PurchaseOrder po = new PurchaseOrder();
     PurchaseOrderItem item = new PurchaseOrderItem();
@@ -181,6 +215,33 @@ public class PurchaseServiceImplUnitTest {
 
     assertEquals(new BigDecimal("1.25"), item.getUnitPrice());
     assertEquals(new BigDecimal("2.50"), po.getTotalAmount());
+  }
+
+  @Test
+  void createPurchaseOrder_whenBookPriceMissing_shouldUseZero() {
+    PurchaseOrder po = new PurchaseOrder();
+    PurchaseOrderItem item = new PurchaseOrderItem();
+    item.setBookId(33);
+    item.setQuantity(2);
+    item.setUnitPrice(null);
+    po.setItems(Collections.singletonList(item));
+
+    Book book = new Book();
+    book.setBookId(33);
+    book.setPrice(null);
+    when(bookMapper.selectByBookId(33)).thenReturn(book);
+    when(purchaseOrderMapper.insert(any(PurchaseOrder.class)))
+        .thenAnswer(
+            inv -> {
+              PurchaseOrder inserted = inv.getArgument(0);
+              inserted.setPoId(22);
+              return 1;
+            });
+
+    service.createPurchaseOrder(po);
+
+    assertEquals(BigDecimal.ZERO, item.getUnitPrice());
+    assertEquals(new BigDecimal("0.00"), po.getTotalAmount());
   }
 
   @Test
@@ -244,6 +305,83 @@ public class PurchaseServiceImplUnitTest {
     CustomizeException ex =
         assertThrows(CustomizeException.class, () -> service.receivePurchaseOrderItem(null, 1));
     assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenPoiMissing_shouldThrow() {
+    when(purchaseOrderItemMapper.selectByPoItemId(999)).thenReturn(null);
+
+    CustomizeException ex =
+        assertThrows(CustomizeException.class, () -> service.receivePurchaseOrderItem(999, 1));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenBookNull_shouldThrow() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setBookId(33);
+    poi.setQuantity(1);
+    poi.setReceivedQuantity(null); // cover oldReceived null branch
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    when(bookMapper.selectByBookId(33)).thenReturn(null);
+
+    CustomizeException ex =
+        assertThrows(CustomizeException.class, () -> service.receivePurchaseOrderItem(11, 1));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenBookStockNull_shouldTreatAsZeroAndAdd() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setBookId(33);
+    poi.setQuantity(10);
+    poi.setReceivedQuantity(0);
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    Book book = new Book();
+    book.setBookId(33);
+    book.setStock(null);
+    when(bookMapper.selectByBookId(33)).thenReturn(book);
+
+    PurchaseOrder po = new PurchaseOrder();
+    po.setPoId(22);
+    po.setExpectedArrivalDate(new Date());
+    when(purchaseOrderMapper.selectByPoId(22)).thenReturn(po);
+    when(purchaseOrderItemMapper.selectByPoId(22)).thenReturn(Collections.singletonList(poi));
+
+    service.receivePurchaseOrderItem(11, 1);
+
+    assertEquals(Integer.valueOf(1), book.getStock());
+    verify(bookMapper).updateByBookId(book);
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenSupplierBookNull_shouldSkipSupplierFlow() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setSupplierBookId(9);
+    poi.setBookId(null);
+    poi.setQuantity(10);
+    poi.setReceivedQuantity(0);
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    when(supplierBookMapper.selectBySupplierBookId(9)).thenReturn(null);
+
+    PurchaseOrder po = new PurchaseOrder();
+    po.setPoId(22);
+    po.setExpectedArrivalDate(new Date());
+    when(purchaseOrderMapper.selectByPoId(22)).thenReturn(po);
+    when(purchaseOrderItemMapper.selectByPoId(22)).thenReturn(Collections.singletonList(poi));
+
+    service.receivePurchaseOrderItem(11, 1);
+
+    verify(bookMapper, never()).insert(any(Book.class));
   }
 
   @Test
@@ -403,6 +541,128 @@ public class PurchaseServiceImplUnitTest {
 
     assertEquals(Boolean.TRUE, s.getIsProcessed());
     verify(shortageMapper).updateByShortageId(s);
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenShortageAlreadyProcessed_shouldNotUpdateShortage() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setBookId(33);
+    poi.setShortageId(44);
+    poi.setQuantity(10);
+    poi.setReceivedQuantity(3);
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    Book book = new Book();
+    book.setBookId(33);
+    book.setStock(0);
+    when(bookMapper.selectByBookId(33)).thenReturn(book);
+
+    Shortage s = new Shortage();
+    s.setShortageId(44);
+    s.setQuantity(5);
+    s.setIsProcessed(true);
+    when(shortageMapper.selectByShortageId(44)).thenReturn(s);
+
+    PurchaseOrder po = new PurchaseOrder();
+    po.setPoId(22);
+    po.setExpectedArrivalDate(new Date());
+    when(purchaseOrderMapper.selectByPoId(22)).thenReturn(po);
+    when(purchaseOrderItemMapper.selectByPoId(22)).thenReturn(Collections.singletonList(poi));
+
+    service.receivePurchaseOrderItem(11, 2);
+
+    verify(shortageMapper, never()).updateByShortageId(any(Shortage.class));
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenSupplierBookIsbnBlank_shouldSkipIsbnLookup_andCreateNewBook() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setSupplierBookId(9);
+    poi.setBookId(null);
+    poi.setQuantity(10);
+    poi.setReceivedQuantity(0);
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    SupplierBook sb = new SupplierBook();
+    sb.setSupplierBookId(9);
+    sb.setIsbn("  "); // blank => should not call selectByIsbn
+    sb.setTitle("T");
+    sb.setAuthor("A");
+    sb.setPress("P");
+    sb.setPrice(new BigDecimal("9.99"));
+    when(supplierBookMapper.selectBySupplierBookId(9)).thenReturn(sb);
+
+    when(publisherMapper.selectByName("P")).thenReturn(null);
+    when(publisherMapper.insert(any(Publisher.class)))
+        .thenAnswer(
+            inv -> {
+              Publisher p = inv.getArgument(0);
+              p.setPublisherId(77);
+              return 1;
+            });
+    when(bookMapper.insert(any(Book.class)))
+        .thenAnswer(
+            inv -> {
+              Book b = inv.getArgument(0);
+              b.setBookId(101);
+              return 1;
+            });
+
+    PurchaseOrder po = new PurchaseOrder();
+    po.setPoId(22);
+    po.setExpectedArrivalDate(new Date());
+    when(purchaseOrderMapper.selectByPoId(22)).thenReturn(po);
+    when(purchaseOrderItemMapper.selectByPoId(22)).thenReturn(Collections.singletonList(poi));
+
+    service.receivePurchaseOrderItem(11, 1);
+
+    verify(bookMapper, never()).selectByIsbn(any(String.class));
+    verify(bookMapper).insert(any(Book.class));
+  }
+
+  @Test
+  void receivePurchaseOrderItem_whenPublisherLookupThrows_shouldStillCreateBook() {
+    PurchaseOrderItem poi = new PurchaseOrderItem();
+    poi.setPoItemId(11);
+    poi.setPoId(22);
+    poi.setSupplierBookId(9);
+    poi.setBookId(null);
+    poi.setQuantity(10);
+    poi.setReceivedQuantity(0);
+    when(purchaseOrderItemMapper.selectByPoItemId(11)).thenReturn(poi);
+
+    SupplierBook sb = new SupplierBook();
+    sb.setSupplierBookId(9);
+    sb.setIsbn("ISBN-X");
+    sb.setTitle("T");
+    sb.setAuthor("A");
+    sb.setPress("P");
+    sb.setPrice(new BigDecimal("9.99"));
+    when(supplierBookMapper.selectBySupplierBookId(9)).thenReturn(sb);
+
+    when(bookMapper.selectByIsbn("ISBN-X")).thenReturn(Collections.emptyList());
+    when(publisherMapper.selectByName("P")).thenThrow(new RuntimeException("boom"));
+    when(bookMapper.insert(any(Book.class)))
+        .thenAnswer(
+            inv -> {
+              Book b = inv.getArgument(0);
+              b.setBookId(101);
+              return 1;
+            });
+
+    PurchaseOrder po = new PurchaseOrder();
+    po.setPoId(22);
+    po.setExpectedArrivalDate(new Date());
+    when(purchaseOrderMapper.selectByPoId(22)).thenReturn(po);
+    when(purchaseOrderItemMapper.selectByPoId(22)).thenReturn(Collections.singletonList(poi));
+
+    service.receivePurchaseOrderItem(11, 1);
+
+    verify(bookMapper).insert(any(Book.class));
   }
 }
 

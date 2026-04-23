@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,6 +117,148 @@ public class OrderHandleServiceImplUnitTest {
     verify(bookMapper).decrementStockIfEnough(99, 2);
     verify(orderItemMapper).insert(item);
     verify(shoppingCartMapper).deleteByUserIdAndBookId(eq(7), eq(99));
+  }
+
+  @Test
+  void createOrder_whenOrderItemsNull_shouldThrow() {
+    Order order = new Order();
+    order.setUserId(7);
+    order.setOrderItems(null);
+
+    CustomizeException ex = assertThrows(CustomizeException.class, () -> service.createOrder(order));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void createOrder_whenBookStockNull_shouldTreatAsZero_andThrowInsufficientStock() {
+    Order order = new Order();
+    order.setUserId(7);
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(1);
+    order.setOrderItems(Collections.singletonList(item));
+
+    User user = new User();
+    user.setUserId(7);
+    user.setCreditLevelId(3);
+    user.setAccountBalance(new BigDecimal("1000.00"));
+    when(userMapper.selectByUserId(7)).thenReturn(user);
+
+    CreditLevel level = new CreditLevel();
+    level.setDiscountRate(BigDecimal.ZERO);
+    level.setOverdraftLimit(new BigDecimal("0.00"));
+    when(creditLevelMapper.selectByLevelId(3)).thenReturn(level);
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("10.00"));
+    book.setStock(null); // cover stock==null branch
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+
+    CustomizeException ex = assertThrows(CustomizeException.class, () -> service.createOrder(order));
+    assertEquals(ResultCode.INSUFFICIENT_STOCK.getCode(), ex.getCode());
+  }
+
+  @Test
+  void createOrder_whenQuantityNull_shouldThrowFailed() {
+    Order order = new Order();
+    order.setUserId(7);
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(null); // cover quantity==null branch
+    order.setOrderItems(Collections.singletonList(item));
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("10.00"));
+    book.setStock(10);
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+
+    User user = new User();
+    user.setUserId(7);
+    user.setCreditLevelId(3);
+    user.setAccountBalance(new BigDecimal("1000.00"));
+    when(userMapper.selectByUserId(7)).thenReturn(user);
+
+    CreditLevel level = new CreditLevel();
+    level.setDiscountRate(BigDecimal.ZERO);
+    level.setOverdraftLimit(new BigDecimal("0.00"));
+    when(creditLevelMapper.selectByLevelId(3)).thenReturn(level);
+
+    CustomizeException ex = assertThrows(CustomizeException.class, () -> service.createOrder(order));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void createOrder_whenUserBalanceNull_shouldTreatAsZero_andAllowZeroTotal() {
+    Order order = new Order();
+    order.setUserId(7);
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(1);
+    order.setOrderItems(Collections.singletonList(item));
+
+    User user = new User();
+    user.setUserId(7);
+    user.setCreditLevelId(3);
+    user.setAccountBalance(null); // cover accountBalance==null branch
+    when(userMapper.selectByUserId(7)).thenReturn(user);
+
+    CreditLevel level = new CreditLevel();
+    level.setDiscountRate(BigDecimal.ZERO);
+    level.setOverdraftLimit(new BigDecimal("0.00"));
+    when(creditLevelMapper.selectByLevelId(3)).thenReturn(level);
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("0.00")); // make total 0 to avoid credit failure
+    book.setStock(10);
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+    when(bookMapper.decrementStockIfEnough(99, 1)).thenReturn(1);
+    when(orderMapper.insert(any(Order.class)))
+        .thenAnswer(
+            inv -> {
+              Order o = inv.getArgument(0);
+              o.setOrderId(123);
+              return 1;
+            });
+
+    service.createOrder(order);
+
+    assertEquals(new BigDecimal("0.00"), order.getTotalAmount());
+    verify(shoppingCartMapper).deleteByUserIdAndBookId(eq(7), eq(99));
+  }
+
+  @Test
+  void createOrder_whenUserIdNull_andTotalZero_shouldNotTouchShoppingCart() {
+    Order order = new Order();
+    order.setUserId(null); // cover userId==null branch at cart cleanup
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(1);
+    order.setOrderItems(Collections.singletonList(item));
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("0.00"));
+    book.setStock(10);
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+    when(bookMapper.decrementStockIfEnough(99, 1)).thenReturn(1);
+    when(orderMapper.insert(any(Order.class)))
+        .thenAnswer(
+            inv -> {
+              Order o = inv.getArgument(0);
+              o.setOrderId(123);
+              return 1;
+            });
+
+    service.createOrder(order);
+
+    verify(shoppingCartMapper, never()).deleteByUserIdAndBookId(any(Integer.class), any(Integer.class));
   }
 
   @Test
@@ -240,6 +383,75 @@ public class OrderHandleServiceImplUnitTest {
     CustomizeException ex =
         assertThrows(CustomizeException.class, () -> service.createOrder(order));
     assertEquals(ResultCode.INSUFFICIENT_CREDIT.getCode(), ex.getCode());
+  }
+
+  @Test
+  void createOrder_whenUserIdNull_shouldNotQueryUserOrCreditLevel_andShouldFailByCreditCheck() {
+    Order order = new Order();
+    order.setUserId(null);
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(1);
+    order.setOrderItems(Collections.singletonList(item));
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("10.00"));
+    book.setStock(10);
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+
+    CustomizeException ex =
+        assertThrows(CustomizeException.class, () -> service.createOrder(order));
+    assertEquals(ResultCode.INSUFFICIENT_CREDIT.getCode(), ex.getCode());
+    verify(userMapper, never()).selectByUserId(any(Integer.class));
+    verify(creditLevelMapper, never()).selectByLevelId(any(Integer.class));
+  }
+
+  @Test
+  void createOrder_whenCreditLevelHasNullFields_shouldFallbackToZeroes() {
+    Order order = new Order();
+    order.setUserId(7);
+    order.setPaymentStatus("CUSTOM"); // ensure defaults not applied
+    order.setShippingStatus("CUSTOM");
+
+    OrderItem item = new OrderItem();
+    item.setBookId(99);
+    item.setQuantity(1);
+    item.setShippedQuantity(5); // ensure not overwritten to 0
+    order.setOrderItems(Collections.singletonList(item));
+
+    User user = new User();
+    user.setUserId(7);
+    user.setCreditLevelId(3);
+    user.setAccountBalance(new BigDecimal("1000.00"));
+    when(userMapper.selectByUserId(7)).thenReturn(user);
+
+    CreditLevel level = new CreditLevel();
+    level.setDiscountRate(null);
+    level.setOverdraftLimit(null);
+    when(creditLevelMapper.selectByLevelId(3)).thenReturn(level);
+
+    Book book = new Book();
+    book.setBookId(99);
+    book.setPrice(new BigDecimal("10.00"));
+    book.setStock(10);
+    when(bookMapper.selectByBookId(99)).thenReturn(book);
+    when(bookMapper.decrementStockIfEnough(99, 1)).thenReturn(1);
+    when(orderMapper.insert(any(Order.class)))
+        .thenAnswer(
+            inv -> {
+              Order o = inv.getArgument(0);
+              o.setOrderId(1);
+              return 1;
+            });
+
+    service.createOrder(order);
+
+    assertEquals("CUSTOM", order.getPaymentStatus());
+    assertEquals("CUSTOM", order.getShippingStatus());
+    assertEquals(Integer.valueOf(5), item.getShippedQuantity());
+    assertEquals(new BigDecimal("10.00"), item.getUnitPrice());
   }
 
   @Test
@@ -417,6 +629,141 @@ public class OrderHandleServiceImplUnitTest {
         assertThrows(CustomizeException.class, () -> service.shipOrder(123, Collections.singletonList(ship)));
     assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
     verify(userMapper, never()).updateByUserId(any(User.class));
+  }
+
+  @Test
+  void shipOrder_whenToShipNonPositive_shouldSkipAndKeepPendingStatus() {
+    Order order = new Order();
+    order.setOrderId(123);
+    order.setPaymentStatus("PAID");
+
+    OrderItem exist = new OrderItem();
+    exist.setBookId(99);
+    exist.setQuantity(2);
+    exist.setShippedQuantity(0);
+    exist.setUnitPrice(new BigDecimal("10.00"));
+    order.setOrderItems(Collections.singletonList(exist));
+
+    when(orderMapper.selectByOrderId(123)).thenReturn(order);
+
+    OrderItem ship = new OrderItem();
+    ship.setBookId(99);
+    ship.setQuantity(0); // should be skipped
+
+    service.shipOrder(123, Collections.singletonList(ship));
+
+    assertEquals(Integer.valueOf(0), exist.getShippedQuantity());
+    assertEquals("PENDING", order.getShippingStatus());
+    // implementation still persists shippedQuantity (0 delta) for each shipItem
+    verify(orderItemMapper).updateByOrderIdAndBookId(exist);
+    verify(orderMapper).updateByOrderId(order);
+  }
+
+  @Test
+  void shipOrder_whenOrderItemsNull_shouldThrowOrderItemNotFound() {
+    Order order = new Order();
+    order.setOrderId(123);
+    order.setOrderItems(null);
+    when(orderMapper.selectByOrderId(123)).thenReturn(order);
+
+    OrderItem ship = new OrderItem();
+    ship.setBookId(99);
+    ship.setQuantity(1);
+
+    CustomizeException ex =
+        assertThrows(CustomizeException.class, () -> service.shipOrder(123, Collections.singletonList(ship)));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+  }
+
+  @Test
+  void shipOrder_whenUnitPriceNull_shouldFallbackToPrice() {
+    Order order = new Order();
+    order.setOrderId(123);
+    order.setUserId(7);
+    order.setPaymentStatus("PENDING");
+
+    OrderItem exist = new OrderItem();
+    exist.setBookId(99);
+    exist.setQuantity(2);
+    exist.setShippedQuantity(0);
+    exist.setUnitPrice(null);
+    exist.setPrice(new BigDecimal("10.00"));
+    order.setOrderItems(Collections.singletonList(exist));
+
+    when(orderMapper.selectByOrderId(123)).thenReturn(order);
+
+    User user = new User();
+    user.setUserId(7);
+    user.setCreditLevelId(3);
+    user.setAccountBalance(new BigDecimal("100.00"));
+    when(userMapper.selectByUserId(7)).thenReturn(user);
+
+    CreditLevel level = new CreditLevel();
+    level.setOverdraftLimit(new BigDecimal("0.00"));
+    when(creditLevelMapper.selectByLevelId(3)).thenReturn(level);
+
+    OrderItem ship = new OrderItem();
+    ship.setBookId(99);
+    ship.setQuantity(1); // shipTotal should use price 10.00
+
+    service.shipOrder(123, Collections.singletonList(ship));
+
+    assertEquals(new BigDecimal("90.00"), user.getAccountBalance());
+    verify(userMapper).updateByUserId(user);
+  }
+
+  @Test
+  void shipOrder_whenUnpaidAndUserNull_shouldFailByCreditCheck() {
+    Order order = new Order();
+    order.setOrderId(123);
+    order.setUserId(7);
+    order.setPaymentStatus("PENDING");
+
+    OrderItem exist = new OrderItem();
+    exist.setBookId(99);
+    exist.setQuantity(1);
+    exist.setShippedQuantity(0);
+    exist.setUnitPrice(new BigDecimal("10.00"));
+    order.setOrderItems(Collections.singletonList(exist));
+
+    when(orderMapper.selectByOrderId(123)).thenReturn(order);
+    when(userMapper.selectByUserId(7)).thenReturn(null);
+
+    OrderItem ship = new OrderItem();
+    ship.setBookId(99);
+    ship.setQuantity(1);
+
+    CustomizeException ex =
+        assertThrows(CustomizeException.class, () -> service.shipOrder(123, Collections.singletonList(ship)));
+    assertEquals(ResultCode.FAILED.getCode(), ex.getCode());
+    verify(userMapper, never()).updateByUserId(any(User.class));
+    verify(orderItemMapper, never()).updateByOrderIdAndBookId(any(OrderItem.class));
+    verify(orderMapper, never()).updateByOrderId(any(Order.class));
+  }
+
+  @Test
+  void shipOrder_whenExistingShippedQuantityNull_shouldTreatAsZero() {
+    Order order = new Order();
+    order.setOrderId(123);
+    order.setPaymentStatus("PAID");
+
+    OrderItem exist = new OrderItem();
+    exist.setBookId(99);
+    exist.setQuantity(2);
+    exist.setShippedQuantity(null);
+    exist.setUnitPrice(new BigDecimal("10.00"));
+    order.setOrderItems(Collections.singletonList(exist));
+
+    when(orderMapper.selectByOrderId(123)).thenReturn(order);
+
+    OrderItem ship = new OrderItem();
+    ship.setBookId(99);
+    ship.setQuantity(1);
+
+    service.shipOrder(123, Collections.singletonList(ship));
+
+    assertEquals(Integer.valueOf(1), exist.getShippedQuantity());
+    assertEquals("PARTIAL", order.getShippingStatus());
   }
 }
 
